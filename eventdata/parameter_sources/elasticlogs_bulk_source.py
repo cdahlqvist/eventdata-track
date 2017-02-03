@@ -1,5 +1,5 @@
 import logging
-from parameter_sources.randomevent import RandomEvent
+from eventdata.parameter_sources.randomevent import RandomEvent
 
 logger = logging.getLogger("track.elasticlogs")
 

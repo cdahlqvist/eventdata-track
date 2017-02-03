@@ -5,20 +5,23 @@ import datetime
 import calendar
 import gzip
 import re
-from parameter_sources.weightedarray import WeightedArray
-from parameter_sources.timeutils import TimestampStructGenerator
+import os
+from eventdata.parameter_sources.weightedarray import WeightedArray
+from eventdata.parameter_sources.timeutils import TimestampStructGenerator
+
+cwd = os.path.dirname(__file__)
 
 class Agent:
     def __init__(self):
-        self._agents = WeightedArray('parameter_sources/data/agents.json.gz')
+        self._agents = WeightedArray('%s/data/agents.json.gz' % cwd)
 
-        with gzip.open('parameter_sources/data/agents_name_lookup.json.gz', 'rt') as data_file:    
+        with gzip.open('%s/data/agents_name_lookup.json.gz' % cwd, 'rt') as data_file:    
             self._agents_name_lookup = json.load(data_file)
 
-        with gzip.open('parameter_sources/data/agents_os_lookup.json.gz', 'rt') as data_file:    
+        with gzip.open('%s/data/agents_os_lookup.json.gz' % cwd, 'rt') as data_file:    
             self._agents_os_lookup = json.load(data_file)
 
-        with gzip.open('parameter_sources/data/agents_os_name_lookup.json.gz', 'rt') as data_file:    
+        with gzip.open('%s/data/agents_os_name_lookup.json.gz' % cwd, 'rt') as data_file:    
             self._agents_os_name_lookup = json.load(data_file)
 
     def add_fields(self, event):
@@ -33,13 +36,13 @@ class Agent:
 class ClientIp:
     def __init__(self):
         self._rare_clientip_probability = 0.269736965199
-        self._clientips = WeightedArray('parameter_sources/data/clientips.json.gz')
-        self._rare_clientips = WeightedArray('parameter_sources/data/rare_clientips.json.gz')
+        self._clientips = WeightedArray('%s/data/clientips.json.gz' % cwd)
+        self._rare_clientips = WeightedArray('%s/data/rare_clientips.json.gz' % cwd)
 
-        with gzip.open('parameter_sources/data/clientips_country_lookup.json.gz', 'rt') as data_file:    
+        with gzip.open('%s/data/clientips_country_lookup.json.gz' % cwd, 'rt') as data_file:    
             self._clientips_country_lookup = json.load(data_file)
 
-        with gzip.open('parameter_sources/data/clientips_location_lookup.json.gz', 'rt') as data_file:    
+        with gzip.open('%s/data/clientips_location_lookup.json.gz' % cwd, 'rt') as data_file:    
             self._clientips_location_lookup = json.load(data_file)
 
     def add_fields(self, event):
@@ -68,9 +71,9 @@ class ClientIp:
 
 class Referrer:
     def __init__(self):
-        self._referrers = WeightedArray('parameter_sources/data/referrers.json.gz')
+        self._referrers = WeightedArray('%s/data/referrers.json.gz' % cwd)
 
-        with gzip.open('parameter_sources/data/referrers_url_base_lookup.json.gz', 'rt') as data_file:    
+        with gzip.open('%s/data/referrers_url_base_lookup.json.gz' % cwd, 'rt') as data_file:    
             self._referrers_url_base_lookup = json.load(data_file)
 
     def add_fields(self, event):
@@ -80,9 +83,9 @@ class Referrer:
 
 class Request:
     def __init__(self):
-        self._requests = WeightedArray('parameter_sources/data/requests.json.gz')
+        self._requests = WeightedArray('%s/data/requests.json.gz' % cwd)
 
-        with gzip.open('parameter_sources/data/requests_url_base_lookup.json.gz', 'rt') as data_file:    
+        with gzip.open('%s/data/requests_url_base_lookup.json.gz' % cwd, 'rt') as data_file:    
             self._requests_url_base_lookup = json.load(data_file)
 
     def add_fields(self, event):
@@ -160,65 +163,6 @@ class RandomEvent:
             return self._index.format(ts=timestruct)
         else:
             return self._index
-
-
-
-
-
-
-
-
-#    def __string_to_datetime(self, str):
-#        c = re.split('\D+', str)
-#
-#        if len(c) >= 6 and len(c[0]) == 4:
-#        	return datetime.datetime.strptime('{} {} {} {} {} {} UTC'.format(c[0], c[1], c[2], c[3], c[4], c[5]), "%Y %m %d %H %M %S %Z")
-#        elif len(c) >= 6 and len(c[0]) == 2:
-#            return datetime.datetime.strptime('{} {} {} {} {} {} UTC'.format(c[0], c[1], c[2], c[3], c[4], c[5]), "%y %m %d %H %M %S %Z")
-#        elif len(c) >= 3 and len(c[0]) == 4:
-#            return datetime.datetime.strptime('{} {} {} UTC'.format(c[0], c[1], c[2]), "%Y %m %d %Z")
-#        else:
-#            return datetime.datetime.strptime('{} {} {} UTC'.format(c[0], c[1], c[2]), "%y %m %d %Z")
-
-#    def __parse_date_range(self, str):
-#        dates = str.split(',')
-
-#        if len(dates) == 1:
-#            now = datetime.datetime.utcnow()
-#            dt1 = self.__string_to_datetime(dates[0])
-
-#            if now > dt1:
-#            	return [dt1, (now - dt1).total_seconds()]
-#            else:
-#                return [now, (dt1 - now).total_seconds()]
-
-#        else:
-#            dt1 = self.__string_to_datetime(dates[0])
-#            dt2 = self.__string_to_datetime(dates[1])
-
-#            if dt2 > dt1:
-#            	return [dt1, (dt2 - dt1).total_seconds()]
-#            else:
-#                return [dt2, (dt1 - dt2).total_seconds()]
-    
-#    def __get_event_datetime(self):	
-#        if self._time_interval == 'now':
-#        	return datetime.datetime.utcnow()
-#        else:
-#            r = random.random() * self._time_interval[1]
-#            dt = self._time_interval[0] + datetime.timedelta(seconds=r)
-#            return dt
-
-#    def __generate_time_struct(self, date_time):
-#        ts = {}
-#        ts['iso'] = "{}Z".format(date_time.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3])
-#        ts['yyyy'] = ts['iso'][:4]
-#        ts['yy'] = ts['iso'][2:4]
-#        ts['mm'] = ts['iso'][5:7]
-#        ts['dd'] = ts['iso'][8:10]
-#        ts['hh'] = ts['iso'][11:13]
-
-#        return ts
 
     def __generate_message_field(self, event):
         return '{} - - [{}] "{} {} HTTP/{}" {} {} "-" "{}"'.format(event['clientip'], event['@timestamp'], event['verb'], event['request'], event['httpversion'], event['response'], event['bytes'], event['agent'])
