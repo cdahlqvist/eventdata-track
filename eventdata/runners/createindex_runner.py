@@ -24,8 +24,7 @@ def createindex(es, params):
 
         logger.info("[createindex] Upload index template {} => {}".format(template_name, json.dumps(params['index_template_body'])))
 
-        if not es.exists_template(name=template_name):
-        	es.indices.put_template(name=template_name, body=params['index_template_body'])
+        es.indices.put_template(name=template_name, body=params['index_template_body'])
 
     if 'alias' in params:
     	b = { 'aliases': {} }
