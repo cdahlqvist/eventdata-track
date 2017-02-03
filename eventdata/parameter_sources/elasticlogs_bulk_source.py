@@ -80,13 +80,13 @@ class ElasticlogsBulkSource:
         # Build bulk array
         bulk_array = []
         for x in range(0, self._bulk_size):
-            evt, idx, typ = self._randomevent(self._params)
+            evt, idx, typ = self._randomevent.generate_event()
             bulk_array.append({'index': {'_index': idx, '_type': typ}})
             bulk_array.append(evt)
 
         response = { "body": bulk_array, "action_metadata_present": True }
 
-        if "pipeline" in params.keys():
+        if "pipeline" in self._params.keys():
             response["pipeline"] = params["pipeline"]
 
         return response
