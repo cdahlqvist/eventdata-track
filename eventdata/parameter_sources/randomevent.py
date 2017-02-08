@@ -165,7 +165,7 @@ class RandomEvent:
             return self._index
 
     def __generate_message_field(self, event):
-        return '{} - - [{}] "{} {} HTTP/{}" {} {} "-" "{}"'.format(event['clientip'], event['@timestamp'], event['verb'], event['request'], event['httpversion'], event['response'], event['bytes'], event['agent'])
+        return '{} - - [{}] "{} {} HTTP/{}" {} {} "-" {} {}'.format(event['clientip'], event['@timestamp'], event['verb'], event['request'], event['httpversion'], event['response'], event['bytes'], event['referrer'], event['agent'])
 
     def __delete_requested_fields(self, event):
         for d in self._delete_fields:
