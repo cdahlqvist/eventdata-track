@@ -1,6 +1,5 @@
 import json
 import random
-import math
 import gzip
 
 class WeightedArray:
@@ -17,6 +16,8 @@ class WeightedArray:
             self._items.append(item[1])
             self._totals.append(self._sum)
 
+        random.seed()
+
     def get_random(self):
         return self._items[self.__random_index()]
 
@@ -25,7 +26,6 @@ class WeightedArray:
         maximumIndex = len(self._totals)
         total = 0
 
-        random.seed()
         rand = random.random() * self._sum
 
         while maximumIndex >= minimumIndex:
@@ -34,7 +34,7 @@ class WeightedArray:
             if middleIndex < 0:
                 middleIndex = 0
             else:
-                middleIndex = math.floor(middleIndex)
+                middleIndex = (int)(middleIndex)
 
             total = self._totals[middleIndex]
 

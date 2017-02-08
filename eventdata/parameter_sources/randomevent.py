@@ -1,6 +1,5 @@
 import json
 import random
-import math
 import datetime
 import calendar
 import gzip
@@ -62,10 +61,10 @@ class ClientIp:
     def __fill_out_ip_prefix(self, ip_prefix):
         rnd1 = random.random()
         v1 = rnd1 * ( 1 - rnd1) * 255 * 4
-        k1 = math.floor(v1)
+        k1 = (int)(v1)
         rnd2 = random.random()
         v2 = rnd2 * ( 1 - rnd2) * 255 * 4
-        k2 = math.floor(v2)
+        k2 = (int)(v2)
 
         return "{}.{}.{}".format(ip_prefix, k1, k2)
 
