@@ -23,31 +23,24 @@ class WeightedArray:
 
     def __random_index(self):
         minimumIndex = 0
-        maximumIndex = len(self._totals)
+        maximumIndex = len(self._totals) - 1
         total = 0
 
         rand = random.random() * self._sum
 
-        while maximumIndex >= minimumIndex:
-            middleIndex = (maximumIndex + minimumIndex) / 2
+        while maximumIndex > minimumIndex:
+            if self._totals[minimumIndex] > rand:
+                break
 
-            if middleIndex < 0:
-                middleIndex = 0
-            else:
-                middleIndex = (int)(middleIndex)
-
+            middleIndex = (int)((maximumIndex + minimumIndex) / 2)
             total = self._totals[middleIndex]
 
-            if rand == total:
-                middleIndex += 1
-                break
-            elif rand < total:
-                if middleIndex > 0 and rand > self._totals[middleIndex - 1]:
-                    break
-
-                maximumIndex = middleIndex - 1
-
+            if total > rand:
+                maximumIndex = middleIndex
             else:
-                minimumIndex = middleIndex + 1
-
-        return middleIndex
+                if middleIndex > minimumIndex:
+                    minimumIndex = middleIndex
+                else:
+                    minimumIndex += 1
+                
+        return minimumIndex
