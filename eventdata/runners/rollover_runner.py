@@ -8,5 +8,5 @@ def rollover(es, params):
     as well as a key "body" containing the actual rollover request and associated conditions.
 
     """
-    es.rollover(alias=params["alias"], body=params["body"])
+    es.indices.rollover(alias=params["alias"], body=params["body"])
     return 1, "ops"

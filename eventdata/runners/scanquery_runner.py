@@ -1,8 +1,9 @@
 import elasticsearch
+import elasticsearch.helpers
 
-def scanscroll(es, params):
+def scanquery(es, params):
     """
-    Runs a scan and scroll search against Elasticsearch retrieving either all (default) or a specific number of results.
+    Runs a scan query against Elasticsearch retrieving either all (default) or a specific number of results.
 
     It expects the parameter hash to contain the following keys:
         "index"           - Specifies the index pattern to search
@@ -33,7 +34,7 @@ def scanscroll(es, params):
       result_size = 0
 
     result_count = 0
-    scroll = es.helpers.scan(index=params["index"], doc_type=dt, query=params['query'], size=sz, scroll=sc)
+    scroll = elasticsearch.helpers.scan(es, index=params["index"], doc_type=dt, query=params['query'], size=sz, scroll=sc)
     
     for res in scroll:
         result_count += 1

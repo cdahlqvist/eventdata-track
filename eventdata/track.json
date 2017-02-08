@@ -118,8 +118,8 @@
       }
     },
     {
-      "name": "scanscroll_new_elasticlogs_1m",
-      "operation-type": "scanscroll",
+      "name": "scanquery_new_elasticlogs_1m",
+      "operation-type": "scanquery",
       "index": "elasticlogs-*",
       "query": {
         "query": {
@@ -133,8 +133,8 @@
       }
     },
     {
-      "name": "scanscroll_new_elasticlogs_5m",
-      "operation-type": "scanscroll",
+      "name": "scanquery_new_elasticlogs_5m",
+      "operation-type": "scanquery",
       "index": "elasticlogs-*",
       "query": {
         "query": {
@@ -249,19 +249,19 @@
         {
           "parallel": {
             "warmup-time-period": 0,
-            "time-period": 300,
+            "time-period": 600,
             "tasks": [
               {
                 "operation": "index-append-1000-elasticlogs_write",
                 "target-throughput": 10,
-                "clients": 1
+                "clients": 4
               },
               {
                 "operation": "rollover_elasticlogs_write",
                 "target-interval": 30
               },
               {
-                "operation": "scanscroll_new_elasticlogs_1m",
+                "operation": "scanquery_new_elasticlogs_1m",
                 "target-interval": 60
               }
             ]
