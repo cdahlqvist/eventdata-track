@@ -19,31 +19,31 @@
     {
       "name": "index-append-1000",
       "operation-type": "index",
-      "param-source": "elasticlogs",
+      "param-source": "elasticlogs_bulk",
       "bulk-size": 1000
     },
     {
       "name": "index-append-500",
       "operation-type": "index",
-      "param-source": "elasticlogs",
+      "param-source": "elasticlogs_bulk",
       "bulk-size": 500
     },
     {
       "name": "index-append-250",
       "operation-type": "index",
-      "param-source": "elasticlogs",
+      "param-source": "elasticlogs_bulk",
       "bulk-size": 250
     },
     {
       "name": "index-append-125",
       "operation-type": "index",
-      "param-source": "elasticlogs",
+      "param-source": "elasticlogs_bulk",
       "bulk-size": 125
     },
     {
       "name": "index-append-1000-elasticlogs_write",
       "operation-type": "index",
-      "param-source": "elasticlogs",
+      "param-source": "elasticlogs_bulk",
       "index": "elasticlogs_write",
       "bulk-size": 1000
     },
@@ -118,10 +118,12 @@
       }
     },
     {
-      "name": "scanquery_new_elasticlogs_1m",
-      "operation-type": "scanquery",
+      "name": "scanquery_elasticlogs_1m",
+      "operation-type": "search",
       "index": "elasticlogs-*",
-      "query": {
+      "pages": 1000,
+      "results-per-page": 10000,
+      "body": {
         "query": {
           "range" : {
             "@timestamp" : {
@@ -133,10 +135,12 @@
       }
     },
     {
-      "name": "scanquery_new_elasticlogs_5m",
-      "operation-type": "scanquery",
+      "name": "scanquery_elasticlogs_5m",
+      "operation-type": "search",
       "index": "elasticlogs-*",
-      "query": {
+      "pages": 1000,
+      "results-per-page": 10000,
+      "body": {
         "query": {
           "range" : {
             "@timestamp" : {
@@ -239,6 +243,9 @@
         "index.number_of_replicas": 0,
         "index.number_of_shards":1
       },
+      "meta": {
+        "high_level_parameter": "test"
+      },
       "schedule": [
         {
           "operation": "create_elasticlogs_write",
@@ -249,20 +256,28 @@
         {
           "parallel": {
             "warmup-time-period": 0,
-            "time-period": 600,
+            "time-period": 180,
             "tasks": [
               {
                 "operation": "index-append-1000-elasticlogs_write",
-                "target-throughput": 10,
-                "clients": 4
+                "target-throughput": 4,
+                "clients": 4,
+                "meta": {
+                  "batch_size": 1000,
+                  "target_indexing_rate": 4000
+                }
               },
               {
                 "operation": "rollover_elasticlogs_write",
                 "target-interval": 30
               },
               {
-                "operation": "scanquery_new_elasticlogs_1m",
-                "target-interval": 60
+                "operation": "scanquery_elasticlogs_1m",
+                "target-interval": 60,
+                "meta": {
+                  "scan_interval_seconds": 60,
+                  "target_indexing_rate": 4000
+                }
               }
             ]
           }
