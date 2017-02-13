@@ -283,6 +283,60 @@
           }
         }
       ]
+    },
+     {
+      "name": "kibana-test",
+      "description": "Indexes data and then queries it using Kibana.",
+      "index-settings": {
+        "index.number_of_replicas": 0,
+        "index.number_of_shards":1
+      },
+      "meta": {
+        "high_level_parameter": "test"
+      },
+      "schedule": [
+        {
+          "operation": "create_elasticlogs_write",
+          "clients": 1,
+          "warmup-iterations": 0,
+          "iterations": 1
+        },
+
+
+
+
+
+        
+        {
+          "parallel": {
+            "warmup-time-period": 0,
+            "time-period": 180,
+            "tasks": [
+              {
+                "operation": "index-append-1000-elasticlogs_write",
+                "target-throughput": 4,
+                "clients": 4,
+                "meta": {
+                  "batch_size": 1000,
+                  "target_indexing_rate": 4000
+                }
+              },
+              {
+                "operation": "rollover_elasticlogs_write",
+                "target-interval": 30
+              },
+              {
+                "operation": "scanquery_elasticlogs_1m",
+                "target-interval": 60,
+                "meta": {
+                  "scan_interval_seconds": 60,
+                  "target_indexing_rate": 4000
+                }
+              }
+            ]
+          }
+        }
+      ]
     }
   ]
 }

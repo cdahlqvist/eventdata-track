@@ -37,8 +37,8 @@ def __perform_field_stats_lookup(es, index_pattern, field):
     return min_ts, max_ts
 
 def __write_to_file(id, data):
-    dir_name = "{}/.rally/temp".format(environ['HOME'])
-    file_name "{}/.rally/temp/{}.json".format(environ['HOME'], id)
+    dir_name = "{}/.rally/temp".format(os.environ['HOME'])
+    file_name = "{}/.rally/temp/{}.json".format(os.environ['HOME'], id)
 
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
@@ -46,7 +46,6 @@ def __write_to_file(id, data):
     file = open(file_name, 'w+')
 
     file.write(data)
-
 
 def indexstats(es, params):
     """
