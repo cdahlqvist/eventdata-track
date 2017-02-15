@@ -1,6 +1,7 @@
 import datetime
 import os
 import json
+import sys
 
 import logging
 
@@ -70,7 +71,7 @@ def indexstats(es, params):
         params['index_pattern'] = 'elasticlogs-*'
     
     if 'timestamp_field' not in params:
-        params['timestamp'] = '@timestamp'
+        params['timestamp_field'] = '@timestamp'
 
     min_ts, max_ts = __perform_field_stats_lookup(es, params['index_pattern'], params['timestamp_field'])
 

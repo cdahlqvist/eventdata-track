@@ -156,9 +156,9 @@ class ElasticlogsKibanaSource:
         query_string = self._query_string_list[idx]
 
         if self._dashboard == 'traffic':
-            response = self.__traffic_dashboard(index_pattern, query_string, interval, ts_min_ms, ts_max_ms)
+            response = {"body": self.__traffic_dashboard(index_pattern, query_string, interval, ts_min_ms, ts_max_ms)}
         elif self._dashboard == 'content_issues':
-            response = self.__content_issues_dashboard(index_pattern, query_string, interval, ts_min_ms, ts_max_ms)
+            response = {"body": self.__content_issues_dashboard(index_pattern, query_string, interval, ts_min_ms, ts_max_ms)}
 
         return response
 

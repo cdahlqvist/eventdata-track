@@ -23,7 +23,7 @@ def __find_time_interval(query):
                         field = key
                         ts_min = clause[key]['gte']
                         ts_max = clause[key]['lte']
-                        format = clause[key]['format']
+                        ts_format = clause[key]['format']
 
     return interval_found, field, ts_min, ts_max, ts_format
 
@@ -68,7 +68,7 @@ def kibana(es, params):
     # Loops through visualisations and calls field stats API for each one without caching, which is what 
     # Kibana currently does
     visualisations = len(request) / 2
-
+    
     for i in range(0,len(request),2):
         pattern_found, pattern = __index_wildcard(request[i])
 

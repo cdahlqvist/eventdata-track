@@ -43,7 +43,6 @@ class ElasticlogsBulkSource:
                                     slow it down. If a task is set up to run indexing for one hour with a fixed starting point of 
                                     '2016-12-20 20:12:32' and an acceleration factor of 2.0, events will be generated in timestamp 
                                     sequence covering a 2-hour window, '2017-02-20 20:12:32' to '2017-02-20 22:12:32' (approximately).
-
     """
     def __init__(self, indices, params):
         self._indices = indices

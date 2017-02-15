@@ -107,13 +107,24 @@
       "index_template_name": "elasticlogs"
     },
     {
-      "name": "rollover_elasticlogs_write",
+      "name": "rollover_elasticlogs_write_1M",
       "operation-type": "rollover",
       "alias": "elasticlogs_write",
       "body": {
         "conditions": {
           "max_age":   "1d",
           "max_docs":  1000000
+        }
+      }
+    },
+    {
+      "name": "rollover_elasticlogs_write_200k",
+      "operation-type": "rollover",
+      "alias": "elasticlogs_write",
+      "body": {
+        "conditions": {
+          "max_age":   "1d",
+          "max_docs":  200000
         }
       }
     },
@@ -150,6 +161,33 @@
           }
         }
       }
+    },
+    {
+      "name": "indexstats_elasticlogs-*_KIBANATEST",
+      "operation-type": "indexstats",
+      "indexstats_id": "KIBANATEST"
+    },
+    {
+      "name": "relative-kibana-traffic-dashboard_50%",
+      "operation-type": "kibana",
+      "param-source": "elasticlogs_kibana",
+      "dashboard":"traffic",
+      "index_pattern": "elasticlogs-*",
+      "query_string": ["*"],
+      "indexstats_id": "KIBANATEST",
+      "window_end": "START+50%,END",
+      "window_length": "50%"
+    },
+    {
+      "name": "relative-kibana-content_issues-dashboard_50%",
+      "operation-type": "kibana",
+      "param-source": "elasticlogs_kibana",
+      "dashboard":"content_issues",
+      "index_pattern": "elasticlogs-*",
+      "query_string": ["*"],
+      "indexstats_id": "KIBANATEST",
+      "window_end": "START+50%,END",
+      "window_length": "50%"
     }
   ],
   "challenges": [
@@ -268,7 +306,7 @@
                 }
               },
               {
-                "operation": "rollover_elasticlogs_write",
+                "operation": "rollover_elasticlogs_write_200k",
                 "target-interval": 30
               },
               {
@@ -301,40 +339,63 @@
           "warmup-iterations": 0,
           "iterations": 1
         },
-
-
-
-
-
-        
         {
           "parallel": {
             "warmup-time-period": 0,
-            "time-period": 180,
+            "time-period": 600,
             "tasks": [
               {
                 "operation": "index-append-1000-elasticlogs_write",
-                "target-throughput": 4,
-                "clients": 4,
+                "target-throughput": 2,
+                "clients": 1,
                 "meta": {
                   "batch_size": 1000,
-                  "target_indexing_rate": 4000
+                  "target_indexing_rate": 2000
                 }
               },
               {
-                "operation": "rollover_elasticlogs_write",
-                "target-interval": 30
-              },
-              {
-                "operation": "scanquery_elasticlogs_1m",
-                "target-interval": 60,
-                "meta": {
-                  "scan_interval_seconds": 60,
-                  "target_indexing_rate": 4000
-                }
+                "operation": "rollover_elasticlogs_write_200k",
+                "target-interval": 10
               }
             ]
           }
+        },
+        {
+          "operation": "indexstats_elasticlogs-*_KIBANATEST",
+          "iterations": 1
+        },
+        {
+          "operation": "relative-kibana-traffic-dashboard_50%",
+          "iterations": 1
+        },
+        {
+          "operation": "relative-kibana-content_issues-dashboard_50%",
+          "iterations": 1
+        }
+      ]
+    },
+    {
+      "name": "kibana-test-noindex",
+      "description": "Indexes data and then queries it using Kibana.",
+      "index-settings": {
+        "index.number_of_replicas": 0,
+        "index.number_of_shards":1
+      },
+      "meta": {
+        "high_level_parameter": "test"
+      },
+      "schedule": [
+        {
+          "operation": "indexstats_elasticlogs-*_KIBANATEST",
+          "iterations": 1
+        },
+        {
+          "operation": "relative-kibana-traffic-dashboard_50%",
+          "iterations": 1
+        },
+        {
+          "operation": "relative-kibana-content_issues-dashboard_50%",
+          "iterations": 1
         }
       ]
     }
