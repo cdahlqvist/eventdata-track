@@ -15,15 +15,17 @@ def __find_time_interval(query):
 
     if 'query' in query and 'bool' in query['query'] and 'must' in query['query']['bool']:
         query_clauses = query['query']['bool']['must']
-
         for clause in query_clauses:
-            if 'range' in clause:
-                for key in clause.keys():
-                    if 'lte' in clause[key] and 'gte' in clause[key] and 'format' in clause[key]:
+            if 'range' in clause.keys():
+                range_clause = clause['range']
+                for key in range_clause.keys():
+                    keys = range_clause[key].keys()
+                    if 'lte' in keys and 'gte' in keys and 'format' in keys:
                         field = key
-                        ts_min = clause[key]['gte']
-                        ts_max = clause[key]['lte']
-                        ts_format = clause[key]['format']
+                        ts_min = range_clause[key]['gte']
+                        ts_max = range_clause[key]['lte']
+                        ts_format = range_clause[key]['format']
+                        interval_found = True
 
     return interval_found, field, ts_min, ts_max, ts_format
 
@@ -40,13 +42,15 @@ def __index_wildcard(index_spec):
             return False, ""
 
 def __perform_field_stats_lookup(es, index_pattern, field, min_val, max_val, fmt):
-    req_body = { 'fields': field, 'index_constraints': {}}
+    req_body = { 'fields': [field], 'index_constraints': {}}
     req_body['index_constraints'][field] = {'max_value': {'gte': min_val, 'format': fmt}, 'min_value': {'lte': max_val, 'format': fmt}}
-    result = es.field_stats(index=index_pattern, level='indices')
+    result = es.field_stats(index=index_pattern, level='indices', body=req_body)
+    indices_list = list(result['indices'].keys())
 
-    indices_list = result['indices'].keys()
-
-    return indices_list
+    if indices_list == None:
+        return [index_pattern]
+    else:
+        return indices_list
 
 def __get_ms_timestamp():
     return int(round(time.time() * 1000))
@@ -57,45 +61,47 @@ def kibana(es, params):
 
     It expects the parameter hash to contain the following keys:
         "body"    - msearch request body representing the Kibana dashboard in the  form of an array of dicts.
-        "timeout" - Timeout for dashboard request in seconds. This excludes calls to the field stats API. Defaults to 30s.
     """
     request = params['body']
+    tout = 0
 
-    logger.debug("[kibana_runner] Received request: {}".format(json.dumps(request)))
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("[kibana_runner] Received request: {}".format(json.dumps(request)))
 
-    field_stat_start = __get_ms_timestamp()
+    try:
+        field_stat_start = __get_ms_timestamp()
 
-    # Loops through visualisations and calls field stats API for each one without caching, which is what 
-    # Kibana currently does
-    visualisations = len(request) / 2
+        # Loops through visualisations and calls field stats API for each one without caching, which is what 
+        # Kibana currently does
+        visualisations = len(request) / 2
     
-    for i in range(0,len(request),2):
-        pattern_found, pattern = __index_wildcard(request[i])
-
         cache = {}
 
-        if pattern_found:
-            interval_found, field, ts_min, ts_max, ts_fmt = __find_time_interval(request[i + 1])
-            key = "{}-{}-{}".format(pattern, ts_min, ts_max)
+        for i in range(0,len(request),2):
+            pattern_found, pattern = __index_wildcard(request[i])
 
-            if key in cache.keys():
-                request[i]['index'] = cache[key]
-            else:
-                request[i]['index'] = __perform_field_stats_lookup(es, pattern, field, ts_min, ts_max, ts_fmt)
-                cache[key] = request[i]['index']
+            if pattern_found:
+                interval_found, field, ts_min, ts_max, ts_fmt = __find_time_interval(request[i + 1])
+                key = "{}-{}-{}".format(pattern, ts_min, ts_max)
 
-    field_stat_duration = __get_ms_timestamp() - field_stat_start
+                if key in list(cache.keys()):
+                    request[i]['index'] = cache[key]
+                else:
+                    request[i]['index'] = __perform_field_stats_lookup(es, pattern, field, ts_min, ts_max, ts_fmt)
+                    cache[key] = request[i]['index']
 
-    logger.debug("[kibana_runner] Updated request: {}".format(json.dumps(request)))
+        field_stat_duration = __get_ms_timestamp() - field_stat_start
 
-    if 'timeout' in params.keys():
-        tout = params['timeout']
-    else:
-        tout = 30000
+    except elasticsearch.TransportError as e:
+        logger.info("[kibana_runner] Error looking up field stats: {}".format(e))
 
-    response = es.msearch(body = request, timeout = tout)
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("[kibana_runner] Updated request: {}".format(request))
 
-    logger.debug("[kibana_runner] response: {}".format(json.dumps(response)))
+    response = es.msearch(body = request)
+
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("[kibana_runner] response: {}".format(response))
 
     return {
         "weight": 1,

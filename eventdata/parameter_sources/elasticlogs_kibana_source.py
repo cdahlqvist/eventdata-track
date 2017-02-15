@@ -59,7 +59,7 @@ class ElasticlogsKibanaSource:
         self._index_pattern = 'elasticlogs-*'
         self._query_string_list = ['*']
         self._dashboard = 'traffic'
-
+        
         random.seed()
 
         if 'index_pattern' in params.keys():
@@ -113,7 +113,7 @@ class ElasticlogsKibanaSource:
                 self._window_duration_ms = int(86400*val*1000)
         elif m2:
             if self._indexstats_provided:
-                val = int(math.fabs(float(m2.group(1)) * (self._indexstats_end_ms - self._indexstats_start_ms)))
+                val = int(math.fabs(float(m2.group(1)) / 100.0) * (self._indexstats_end_ms - self._indexstats_start_ms))
                 self._window_duration_ms = val
             else:
                 raise ConfigurationError('Invalid window_length as a percentage ({}) may only be used when indexstats_id provided.'.format(wli))
@@ -159,7 +159,7 @@ class ElasticlogsKibanaSource:
             response = {"body": self.__traffic_dashboard(index_pattern, query_string, interval, ts_min_ms, ts_max_ms)}
         elif self._dashboard == 'content_issues':
             response = {"body": self.__content_issues_dashboard(index_pattern, query_string, interval, ts_min_ms, ts_max_ms)}
-
+        
         return response
 
     def __window_boundary_to_ms(self, wb):
@@ -219,16 +219,15 @@ class ElasticlogsKibanaSource:
                 else:
                     raise ConfigurationError('Window end definition based on {} requires indexstats_id has been specified.'.format(m3.group(1)))
             elif m4:
-
                 if self._indexstats_provided:
                     reference = m4.group(1)
                     percentage = float(m4.group(2)) / 100.0
-
+                    
                     if reference == 'START':
-                        epoch_ms = percentage * (self._indexstats_end_ms - self._indexstats_start_ms) + self._indexstats_start_ms
+                        epoch_ms = int(percentage * (self._indexstats_end_ms - self._indexstats_start_ms)) + self._indexstats_start_ms
                     else:
-                        epoch_ms = percentage * (self._indexstats_end_ms - self._indexstats_start_ms) + self._indexstats_end_ms
-
+                        epoch_ms = int(percentage * (self._indexstats_end_ms - self._indexstats_start_ms)) + self._indexstats_end_ms
+                    
                     window_end_spec.append({'type': 'absolute', 'ts_ms': epoch_ms})
                 else:
                     raise ConfigurationError('indexstats_id does not correspond to exiasting file.')
