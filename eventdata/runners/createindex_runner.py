@@ -21,8 +21,9 @@ def createindex(es, params):
         	template_name = params['index_template_name']
         else:
         	template_name = 'elasticlogs'
-
-        logger.info("[createindex] Upload index template {} => {}".format(template_name, json.dumps(params['index_template_body'])))
+        
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("[createindex] Upload index template {} => {}".format(template_name, json.dumps(params['index_template_body'])))
 
         es.indices.put_template(name=template_name, body=params['index_template_body'])
 
@@ -36,8 +37,8 @@ def createindex(es, params):
         index_name = params['index_name']
     else:
         index_name = 'elasticlogs-000001'
-
-    logger.info("[createindex] Create index {} => {}".format(index_name, json.dumps(b)))
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("[createindex] Create index {} => {}".format(index_name, json.dumps(b)))
 
     es.indices.create(index=index_name, body=b, ignore=400)
 

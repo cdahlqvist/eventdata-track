@@ -36,22 +36,22 @@ class ElasticlogsKibanaSource:
         "dashboard"            -   String indicating which dashboard to simulate. Defaults to 'traffic'.
         "query_string"         -   String or list of strings indicating query parameters to randomize during benchmarking. (optional) Defaults to "*"
         "index_pattern"        -   String representing the index pattern to query. Defaults to 'elasticlogs-*'.     
-        "indexstats_id".       -   Indexstats_id to base relative window definitions on. (not mandatory)
+        "fieldstats_id".       -   fieldstats_id to base relative window definitions on. (not mandatory)
         "window_end"           -   Specification of aggregation window end or period within which it should end. If one single value is specified, 
                                    that will be used to anchor the window. If two values are given in a comma separated list, the end of the window
                                    will be randomized within this interval. Values can be either absolute or relative:
                                        'now' - Always evaluated to the current timestamp. This is the default value.
                                        'now-1h' - Offset to the current timestamp. Consists of a number and either m (minutes), h (hours) or d (days).
                                        '2016-12-20 20:12:32' - Exact timestamp.
-                                       'START' - If an indexstats_id has been provided, 'START' can be used to reference the start of this interval.
-                                       'END' - If an indexstats_id has been provided, 'END' can be used to reference the end of this interval.
-                                       'END-40%' - When an interval has been specified through an indexstats_id, it is possible to express a volume
+                                       'START' - If an fieldstats_id has been provided, 'START' can be used to reference the start of this interval.
+                                       'END' - If an fieldstats_id has been provided, 'END' can be used to reference the end of this interval.
+                                       'END-40%' - When an interval has been specified through an fieldstats_id, it is possible to express a volume
                                        relative to the size of the interval as a percentage. If we assume the interval covers 10 hours, 'END-40%'
                                        represents the timestamp 4 hours (40% of the 10 hour interval) before the END timestamp.
         "window_length"        -   String indicating length of the time window to aggregate across. Values can be either absolute 
                                    or relative. Defaults to '1d'.
                                        '4d' - Consists of a number and either m (minutes), h (hours) or d (days). Can not be lower than 1 minute.
-                                       '10%' - Length given as percentage of window size. Only available when indexstats_id have been specified.
+                                       '10%' - Length given as percentage of window size. Only available when fieldstats_id have been specified.
     """
     def __init__(self, indices, params):
         self._indices = indices
@@ -77,18 +77,18 @@ class ElasticlogsKibanaSource:
             else:
                 logger.info("[kibana] Illegal dashboard configured ({}). Using default dashboard instead.".format(params['dashboard']))
 
-        if 'indexstats_id' in params.keys():
-            file_name = "{}/.rally/temp/{}.json".format(os.environ['HOME'], params['indexstats_id'])
+        if 'fieldstats_id' in params.keys():
+            file_name = "{}/.rally/temp/{}.json".format(os.environ['HOME'], params['fieldstats_id'])
             if os.path.isfile(file_name):
                 filedata = open(file_name, 'r').read()
                 data = json.loads(filedata)
-                self._indexstats_start_ms = data['ts_min_ms']
-                self._indexstats_end_ms = data['ts_max_ms']
-                self._indexstats_provided = True
+                self._fieldstats_start_ms = data['ts_min_ms']
+                self._fieldstats_end_ms = data['ts_max_ms']
+                self._fieldstats_provided = True
             else:
-                raise ConfigurationError('indexstats_id does not correspond to exiasting file.')
+                raise ConfigurationError('fieldstats_id does not correspond to exiasting file.')
         else:
-            self._indexstats_provided = False
+            self._fieldstats_provided = False
 
         # Validate window length(s)
         if 'window_length' in params.keys():
@@ -112,11 +112,11 @@ class ElasticlogsKibanaSource:
             else:
                 self._window_duration_ms = int(86400*val*1000)
         elif m2:
-            if self._indexstats_provided:
-                val = int(math.fabs(float(m2.group(1)) / 100.0) * (self._indexstats_end_ms - self._indexstats_start_ms))
+            if self._fieldstats_provided:
+                val = int(math.fabs(float(m2.group(1)) / 100.0) * (self._fieldstats_end_ms - self._fieldstats_start_ms))
                 self._window_duration_ms = val
             else:
-                raise ConfigurationError('Invalid window_length as a percentage ({}) may only be used when indexstats_id provided.'.format(wli))
+                raise ConfigurationError('Invalid window_length as a percentage ({}) may only be used when fieldstats_id provided.'.format(wli))
         else:
             raise ConfigurationError('Invalid window_length parameter supplied: {}.'.format(wli))
                 
@@ -211,26 +211,26 @@ class ElasticlogsKibanaSource:
                 epoch_ms = (int)((dt-epoch).total_seconds() * 1000)
                 window_end_spec.append({'type': 'absolute', 'ts_ms': epoch_ms})
             elif m3:
-                if self._indexstats_provided:
+                if self._fieldstats_provided:
                     if m3.group(1) == 'START':
-                        window_end_spec.append({'type': 'absolute', 'ts_ms': self._indexstats_start_ms})
+                        window_end_spec.append({'type': 'absolute', 'ts_ms': self._fieldstats_start_ms})
                     else:
-                        window_end_spec.append({'type': 'absolute', 'ts_ms': self._indexstats_end_ms})
+                        window_end_spec.append({'type': 'absolute', 'ts_ms': self._fieldstats_end_ms})
                 else:
-                    raise ConfigurationError('Window end definition based on {} requires indexstats_id has been specified.'.format(m3.group(1)))
+                    raise ConfigurationError('Window end definition based on {} requires fieldstats_id has been specified.'.format(m3.group(1)))
             elif m4:
-                if self._indexstats_provided:
+                if self._fieldstats_provided:
                     reference = m4.group(1)
                     percentage = float(m4.group(2)) / 100.0
                     
                     if reference == 'START':
-                        epoch_ms = int(percentage * (self._indexstats_end_ms - self._indexstats_start_ms)) + self._indexstats_start_ms
+                        epoch_ms = int(percentage * (self._fieldstats_end_ms - self._fieldstats_start_ms)) + self._fieldstats_start_ms
                     else:
-                        epoch_ms = int(percentage * (self._indexstats_end_ms - self._indexstats_start_ms)) + self._indexstats_end_ms
+                        epoch_ms = int(percentage * (self._fieldstats_end_ms - self._fieldstats_start_ms)) + self._fieldstats_end_ms
                     
                     window_end_spec.append({'type': 'absolute', 'ts_ms': epoch_ms})
                 else:
-                    raise ConfigurationError('indexstats_id does not correspond to exiasting file.')
+                    raise ConfigurationError('fieldstats_id does not correspond to exiasting file.')
 
         return window_end_spec
 

@@ -48,7 +48,7 @@ def __write_to_file(id, data):
 
     file.write(data)
 
-def indexstats(es, params):
+def fieldstats(es, params):
     """
     Creates a file with variables in the Rally temporary directory, ~/.rally/temp.
     Populates a set of environment variables with statistics around the data matching an index pattern
@@ -56,7 +56,7 @@ def indexstats(es, params):
     size of the time period covered by the index pattern.
 
     It expects the parameter hash to contain the following keys:
-        "indexstats_id" - String prefix representing this set of variables. Defaults to "ELASTICLOGS".
+        "fieldstats_id" - String prefix representing this set of variables. Defaults to "ELASTICLOGS".
         "index_pattern" - Index pattern statistics are retrieved for. Defaults to "elasticlogs-*".
         "timestamp_field" - Timestamp field to extract field stats for. Defaults to @timestamp.
 
@@ -64,8 +64,8 @@ def indexstats(es, params):
     by the index patterns for the @timestamp field is retrieved. A JSON document with the field "index_pattern", 
     "ts_min_ms" and "ts_max_ms" will be written to a file named <id>.json in the Rally temporary directory.
     """
-    if 'indexstats_id' not in params:
-        params['indexstats_id'] = 'ELASTICLOGS'
+    if 'fieldstats_id' not in params:
+        params['fieldstats_id'] = 'ELASTICLOGS'
     
     if 'index_pattern' not in params:
         params['index_pattern'] = 'elasticlogs-*'
@@ -77,6 +77,6 @@ def indexstats(es, params):
 
     result = {'ts_min_ms': min_ts, 'ts_max_ms': max_ts}
 
-    __write_to_file(params['indexstats_id'], json.dumps(result))
+    __write_to_file(params['fieldstats_id'], json.dumps(result))
 
     return 1, "ops"
