@@ -1,6 +1,6 @@
 {
   "meta": {
-    "short-description": "Track for simulation of event-based use cases.",
+    "short-description": "Track for simulating different aspects of event-based use cases.",
     "description": "This track contains data generators and associated queries and aggregations to allow simulation of event-based use cases."
   },
   "indices": [
@@ -66,17 +66,31 @@
       "bulk-size": 1000
     },
     {
-      "name": "create_elasticlogs_write",
+      "name": "index-append-1000-elasticlogs_q_write",
+      "operation-type": "index",
+      "param-source": "elasticlogs_bulk",
+      "index": "elasticlogs_q_write",
+      "bulk-size": 1000
+    },
+    {
+      "name": "index-append-1000-elasticlogs_i_write",
+      "operation-type": "index",
+      "param-source": "elasticlogs_bulk",
+      "index": "elasticlogs_i_write",
+      "bulk-size": 1000
+    },
+    {
+      "name": "create_elasticlogs_q_write",
       "operation-type": "createindex",
-      "index_name": "elasticlogs-000001",
-      "alias": "elasticlogs_write",
+      "index_name": "elasticlogs_q-000001",
+      "alias": "elasticlogs_q_write",
       "index_template_body": {
-        "template": "elasticlogs*",
+        "template": "elasticlogs_q-*",
         "settings": {
           "index.refresh_interval": "5s",
           "index.codec": "best_compression",
           "index.number_of_replicas": 0,
-          "index.number_of_shards":1
+          "index.number_of_shards":2
         },
         "mappings": {
           "logs": {
@@ -122,12 +136,115 @@
         },
         "aliases": {}
       },
-      "index_template_name": "elasticlogs"
+      "index_template_name": "elasticlogs_q_write"
     },
     {
-      "name": "rollover_elasticlogs_write_1M",
+      "name": "create_elasticlogs_i_write",
+      "operation-type": "createindex",
+      "index_name": "elasticlogs_i-000001",
+      "alias": "elasticlogs_i_write",
+      "index_template_body": {
+        "template": "elasticlogs_i-*",
+        "settings": {
+          "index.refresh_interval": "5s",
+          "index.codec": "best_compression",
+          "index.number_of_replicas": 0,
+          "index.number_of_shards":2
+        },
+        "mappings": {
+          "logs": {
+            "properties": {
+              "@timestamp": { "type": "date" },
+              "@message": { "type": "text", "index": false },
+              "agent": { "type": "keyword", "ignore_above": 256 },
+              "bytes": { "type": "integer" },
+              "clientip": { "type": "ip" },
+              "httpversion": { "type": "keyword", "ignore_above": 256 },
+              "response": { "type": "short" },
+              "verb": { "type": "keyword", "ignore_above": 256 },
+              "geoip" : {
+                "properties" : {
+                  "country_name" : { "type": "keyword" },
+                  "location" : { "type": "geo_point" }
+                }
+              },
+              "useragent": {
+                "properties": {
+                  "name": { "type": "keyword", "ignore_above": 256 },
+                  "os": { "type": "keyword", "ignore_above": 256 },
+                  "os_name": { "type": "keyword", "ignore_above": 256 }
+                }
+              },
+              "request": {
+                "norms": false,
+                "type": "text",
+                "fields": {
+                  "keyword": { "ignore_above": 256, "type": "keyword" }
+                }
+              },
+              "referrer": {
+                "norms": false,
+                "type": "text",
+                "fields": {
+                  "keyword": { "ignore_above": 256, "type": "keyword" }
+                }
+              }
+            },
+            "_all": { "enabled": false }
+          }
+        },
+        "aliases": {}
+      },
+      "index_template_name": "elasticlogs_i_write"
+    },
+    {
+      "name": "rollover_elasticlogs_q_write_100M",
       "operation-type": "rollover",
-      "alias": "elasticlogs_write",
+      "alias": "elasticlogs_q_write",
+      "body": {
+        "conditions": {
+          "max_age":   "1d",
+          "max_docs":  100000000
+        }
+      }
+    },
+    {
+      "name": "rollover_elasticlogs_i_write_100M",
+      "operation-type": "rollover",
+      "alias": "elasticlogs_i_write",
+      "body": {
+        "conditions": {
+          "max_age":   "1d",
+          "max_docs":  100000000
+        }
+      }
+    },
+    {
+      "name": "rollover_elasticlogs_q_write_10M",
+      "operation-type": "rollover",
+      "alias": "elasticlogs_q_write",
+      "body": {
+        "conditions": {
+          "max_age":   "1d",
+          "max_docs":  10000000
+        }
+      }
+    },
+    {
+      "name": "rollover_elasticlogs_i_write_10M",
+      "operation-type": "rollover",
+      "alias": "elasticlogs_i_write",
+      "body": {
+        "conditions": {
+          "max_age":   "1d",
+          "max_docs":  10000000
+        }
+      }
+    },
+    {
+      "name": "rollover_elasticlogs_q_write_1M",
+      "operation-type": "rollover",
+      "alias": "elasticlogs_q_write",
       "body": {
         "conditions": {
           "max_age":   "1d",
@@ -136,21 +253,21 @@
       }
     },
     {
-      "name": "rollover_elasticlogs_write_200k",
+      "name": "rollover_elasticlogs_i_write_1M",
       "operation-type": "rollover",
-      "alias": "elasticlogs_write",
+      "alias": "elasticlogs_i_write",
       "body": {
         "conditions": {
           "max_age":   "1d",
-          "max_docs":  200000
+          "max_docs":  1000000
         }
       }
     },
     {
-      "name": "scanquery_elasticlogs_1m",
+      "name": "scanquery_elasticlogs_i_1m",
       "operation-type": "search",
-      "index": "elasticlogs-*",
-      "pages": 1000,
+      "index": "elasticlogs_i-*",
+      "pages": 10000,
       "results-per-page": 10000,
       "body": {
         "query": {
@@ -164,10 +281,10 @@
       }
     },
     {
-      "name": "scanquery_elasticlogs_5m",
+      "name": "scanquery_elasticlogs_i_5m",
       "operation-type": "search",
-      "index": "elasticlogs-*",
-      "pages": 1000,
+      "index": "elasticlogs_i-*",
+      "pages": 10000,
       "results-per-page": 10000,
       "body": {
         "query": {
@@ -181,28 +298,121 @@
       }
     },
     {
-      "name": "fieldstats_elasticlogs-*_KIBANATEST",
+      "name": "fieldstats_elasticlogs_q-*_ELASTICLOGS",
       "operation-type": "fieldstats",
-      "fieldstats_id": "KIBANATEST"
+      "fieldstats_id": "ELASTICLOGS",
+      "index_pattern": "elasticlogs_q-*"
     },
     {
-      "name": "indicesstats_elasticlogs-*",
+      "name": "indicesstats_elasticlogs_q-*",
       "operation-type": "indicesstats",
-      "index_pattern": "elasticlogs-*"
+      "index_pattern": "elasticlogs_q-*"
     },
     {
-      "name": "indicesstats_elasticlogs_write",
+      "name": "indicesstats_elasticlogs_i-*",
       "operation-type": "indicesstats",
-      "index_pattern": "elasticlogs_write"
+      "index_pattern": "elasticlogs_i-*"
+    },
+    {
+      "name": "indicesstats_elasticlogs_q_write",
+      "operation-type": "indicesstats",
+      "index_pattern": "elasticlogs_q_write"
+    },
+    {
+      "name": "indicesstats_elasticlogs_i_write",
+      "operation-type": "indicesstats",
+      "index_pattern": "elasticlogs_i_write"
+    },
+    {
+      "name": "current-kibana-traffic-dashboard_1h",
+      "operation-type": "kibana",
+      "param-source": "elasticlogs_kibana",
+      "dashboard":"traffic",
+      "index_pattern": "elasticlogs_i-*",
+      "query_string": ["*"],
+      "window_end": "now",
+      "window_length": "1h"
+    },
+    {
+      "name": "current-kibana-content_issues-dashboard_1h",
+      "operation-type": "kibana",
+      "param-source": "elasticlogs_kibana",
+      "dashboard":"content_issues",
+      "index_pattern": "elasticlogs_i-*",
+      "query_string": ["*"],
+      "window_end": "now",
+      "window_length": "1h"
+    },
+    {
+      "name": "current-kibana-traffic-dashboard_30m",
+      "operation-type": "kibana",
+      "param-source": "elasticlogs_kibana",
+      "dashboard":"traffic",
+      "index_pattern": "elasticlogs_i-*",
+      "query_string": ["*"],
+      "window_end": "now",
+      "window_length": "30m"
+    },
+    {
+      "name": "current-kibana-content_issues-dashboard_30m",
+      "operation-type": "kibana",
+      "param-source": "elasticlogs_kibana",
+      "dashboard":"content_issues",
+      "index_pattern": "elasticlogs_i-*",
+      "query_string": ["*"],
+      "window_end": "now",
+      "window_length": "30m"
+    },
+    {
+      "name": "current-kibana-traffic-dashboard_15m",
+      "operation-type": "kibana",
+      "param-source": "elasticlogs_kibana",
+      "dashboard":"traffic",
+      "index_pattern": "elasticlogs_i-*",
+      "query_string": ["*"],
+      "window_end": "now",
+      "window_length": "15m"
+    },
+    {
+      "name": "current-kibana-content_issues-dashboard_15m",
+      "operation-type": "kibana",
+      "param-source": "elasticlogs_kibana",
+      "dashboard":"content_issues",
+      "index_pattern": "elasticlogs_i-*",
+      "query_string": ["*"],
+      "window_end": "now",
+      "window_length": "15m"
+    },
+    {
+      "name": "relative-kibana-traffic-dashboard_25%",
+      "operation-type": "kibana",
+      "param-source": "elasticlogs_kibana",
+      "dashboard":"traffic",
+      "index_pattern": "elasticlogs_q-*",
+      "query_string": ["*"],
+      "fieldstats_id": "ELASTICLOGS",
+      "window_end": "START+25%,END",
+      "window_length": "25%"
+    },
+    {
+      "name": "relative-kibana-content_issues-dashboard_25%",
+      "operation-type": "kibana",
+      "param-source": "elasticlogs_kibana",
+      "dashboard":"content_issues",
+      "index_pattern": "elasticlogs_q-*",
+      "query_string": ["*"],
+      "fieldstats_id": "ELASTICLOGS",
+      "window_end": "START+25%,END",
+      "window_length": "25%"
     },
     {
       "name": "relative-kibana-traffic-dashboard_50%",
       "operation-type": "kibana",
       "param-source": "elasticlogs_kibana",
       "dashboard":"traffic",
-      "index_pattern": "elasticlogs-*",
+      "index_pattern": "elasticlogs_q-*",
       "query_string": ["*"],
-      "fieldstats_id": "KIBANATEST",
+      "fieldstats_id": "ELASTICLOGS",
       "window_end": "START+50%,END",
       "window_length": "50%"
     },
@@ -211,71 +421,138 @@
       "operation-type": "kibana",
       "param-source": "elasticlogs_kibana",
       "dashboard":"content_issues",
-      "index_pattern": "elasticlogs-*",
+      "index_pattern": "elasticlogs_q-*",
       "query_string": ["*"],
-      "fieldstats_id": "KIBANATEST",
+      "fieldstats_id": "ELASTICLOGS",
       "window_end": "START+50%,END",
       "window_length": "50%"
     }
   ],
   "challenges": [
     {
-      "name": "append-no-conflicts",
-      "default": true,
-      "description": "Indexes using 8 clients and runs indexing with a batch size of 1000 for 10 minutes. IDs are autogenerated by Elasticsearch, meaning there are no conflicts.",
+      "name": "append-no-conflicts-4-clients",
+      "description": "Indexes using 4 clients and runs indexing with a batch size of 1000 for 20 minutes. IDs are autogenerated by Elasticsearch, meaning there are no conflicts.",
       "index-settings": {
         "index.number_of_replicas": 0,
         "index.number_of_shards":1
+      },
+      "meta": {
+        "client_count": 4
       },
       "schedule": [
         {
           "operation": "index-append-1000",
           "warmup-time-period": 0,
-          "time-period": 600,
-          "clients": 8
-        }
-      ]
-    },
-    {
-      "name": "indicesstats-test",
-      "description": "Test indicesstats.",
-      "index-settings": {
-        "index.number_of_replicas": 0,
-        "index.number_of_shards":1
-      },
-      "schedule": [
-        {
-          "operation": "indicesstats_elasticlogs-*",
-          "iterations": 1
-        },
-        {
-          "operation": "indicesstats_elasticlogs_write",
-          "iterations": 1
-        }
-      ]
-    },
-    {
-      "name": "local-test",
-      "description": "Indexes using 4 clients and runs indexing with a batch size of 1000 for 2 minutes. IDs are autogenerated by Elasticsearcg, meaning there are no conflicts.",
-      "index-settings": {
-        "index.number_of_replicas": 0,
-        "index.number_of_shards":1
-      },
-      "schedule": [
-        {
-          "operation": "index-append-1000",
-          "warmup-time-period": 0,
-          "time-period": 120,
+          "time-period": 1200,
           "clients": 4
         }
       ]
     },
     {
-      "name": "append-no-conflicts-varying-bulk-size",
-      "description": "Indexes using 8 clients and runs 4 different batchsizes for 5 minutes each. IDs are autogenerated by Elasticsearcg, meaning there are no conflicts.",
+      "name": "append-no-conflicts-8-clients",
+      "default": true,
+      "description": "Indexes using 8 clients and runs indexing with a batch size of 1000 for 20 minutes. IDs are autogenerated by Elasticsearch, meaning there are no conflicts.",
       "index-settings": {
         "index.number_of_replicas": 0,
         "index.number_of_shards":1
+      },
+      "meta": {
+        "client_count": 8
+      },
+      "schedule": [
+        {
+          "operation": "index-append-1000",
+          "warmup-time-period": 0,
+          "time-period": 1200,
+          "clients": 8
+        }
+      ]
+    },
+    {
+      "name": "append-no-conflicts-16-clients",
+      "description": "Indexes using 16 clients and runs indexing with a batch size of 1000 for 20 minutes. IDs are autogenerated by Elasticsearch, meaning there are no conflicts.",
+      "index-settings": {
+        "index.number_of_replicas": 0,
+        "index.number_of_shards":1
+      },
+      "meta": {
+        "client_count": 16
+      },
+      "schedule": [
+        {
+          "operation": "index-append-1000",
+          "warmup-time-period": 0,
+          "time-period": 1200,
+          "clients": 16
+        }
+      ]
+    },
+    {
+      "name": "bulk-size-evaluation-4-clients",
+      "description": "Indexes using 4 clients with different bulk sizes. IDs are autogenerated by Elasticsearch, meaning there are no conflicts.",
+      "index-settings": {
+        "index.number_of_replicas": 0,
+        "index.number_of_shards":1
+      },
+      "meta": {
+        "client_count": 4,
+        "benchmark_type": "indexing_bulksize"
+      },
+      "schedule": [
+        {
+          "operation": "index-append-125",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 4
+        },
+        {
+          "operation": "index-append-250",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 4
+        },
+        {
+          "operation": "index-append-500",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 4
+        },
+        {
+          "operation": "index-append-1000",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 4
+        },
+        {
+          "operation": "index-append-2000",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 4
+        },
+        {
+          "operation": "index-append-5000",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 4
+        },
+        {
+          "operation": "index-append-10000",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 4
+        }
+      ]
+    },
+    {
+      "name": "bulk-size-evaluation-8-clients",
+      "description": "Indexes using 8 clients with different bulk sizes. IDs are autogenerated by Elasticsearch, meaning there are no conflicts.",
+      "index-settings": {
+        "index.number_of_replicas": 0,
+        "index.number_of_shards":1
+      },
+      "meta": {
+        "client_count": 8,
+        "benchmark_type": "indexing_bulksize"
       },
       "schedule": [
         {
@@ -301,150 +578,974 @@
           "warmup-time-period": 0,
           "time-period": 300,
           "clients": 8
-        }
-      ]
-    },
-    {
-      "name": "append-no-conflicts-index-only",
-      "description": "Indexes using 8 threads during 30 minutes. IDs are autogenerated by Elasticsearcg, meaning there are no conflicts.",
-      "index-settings": {
-        "index.number_of_replicas": 0,
-        "index.number_of_shards":1
-      },
-      "schedule": [
+        },
         {
-          "operation": "index-append-1000",
+          "operation": "index-append-2000",
           "warmup-time-period": 0,
-          "time-period": 1800,
+          "time-period": 300,
+          "clients": 8
+        },
+        {
+          "operation": "index-append-5000",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 8
+        },
+        {
+          "operation": "index-append-10000",
+          "warmup-time-period": 0,
+          "time-period": 300,
           "clients": 8
         }
       ]
     },
     {
-      "name": "test",
-      "description": "Runs through and tests all parameter sources and runners.",
+      "name": "bulk-size-evaluation-16-clients",
+      "description": "Indexes using 16 clients with different bulk sizes. IDs are autogenerated by Elasticsearch, meaning there are no conflicts.",
       "index-settings": {
         "index.number_of_replicas": 0,
         "index.number_of_shards":1
       },
       "meta": {
-        "high_level_parameter": "test"
+        "client_count": 16,
+        "benchmark_type": "indexing_bulksize"
       },
       "schedule": [
         {
-          "operation": "create_elasticlogs_write",
-          "clients": 1,
-          "warmup-iterations": 0,
-          "iterations": 1
+          "operation": "index-append-125",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 16
         },
         {
-          "parallel": {
-            "warmup-time-period": 0,
-            "time-period": 180,
-            "tasks": [
-              {
-                "operation": "index-append-1000-elasticlogs_write",
-                "target-throughput": 4,
-                "clients": 4,
-                "meta": {
-                  "batch_size": 1000,
-                  "target_indexing_rate": 4000
-                }
-              },
-              {
-                "operation": "rollover_elasticlogs_write_200k",
-                "target-interval": 30
-              },
-              {
-                "operation": "scanquery_elasticlogs_1m",
-                "target-interval": 60,
-                "meta": {
-                  "scan_interval_seconds": 60,
-                  "target_indexing_rate": 4000
-                }
-              }
-            ]
-          }
+          "operation": "index-append-250",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 16
+        },
+        {
+          "operation": "index-append-500",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 16
+        },
+        {
+          "operation": "index-append-1000",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 16
+        },
+        {
+          "operation": "index-append-2000",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 16
+        },
+        {
+          "operation": "index-append-5000",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 16
+        },
+        {
+          "operation": "index-append-10000",
+          "warmup-time-period": 0,
+          "time-period": 300,
+          "clients": 16
         }
       ]
     },
-     {
-      "name": "kibana-test",
-      "description": "Indexes data and then queries it using Kibana.",
-      "index-settings": {
-        "index.number_of_replicas": 0,
-        "index.number_of_shards":1
-      },
+    {
+      "name": "elasticlogs_q-1bn-load-8-clients",
+      "description": "Indexes 1bn documents (10 batches of 100M) into elasticlogs_q-* indices using 8 clients . IDs are autogenerated by Elasticsearch, meaning there are no conflicts.",
       "meta": {
-        "high_level_parameter": "test"
+        "client_count": 8,
+        "benchmark_type": "indexing"
       },
       "schedule": [
         {
-          "operation": "create_elasticlogs_write",
+          "operation": "create_elasticlogs_q_write",
           "clients": 1,
           "warmup-iterations": 0,
           "iterations": 1
         },
         {
-          "parallel": {
-            "warmup-time-period": 0,
-            "time-period": 600,
-            "tasks": [
-              {
-                "operation": "index-append-1000-elasticlogs_write",
-                "target-throughput": 2,
-                "clients": 1,
-                "meta": {
-                  "batch_size": 1000,
-                  "target_indexing_rate": 2000
-                }
-              },
-              {
-                "operation": "rollover_elasticlogs_write_200k",
-                "target-interval": 10
-              }
-            ]
-          }
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 8
         },
         {
-          "operation": "fieldstats_elasticlogs-*_KIBANATEST",
+          "operation": "rollover_elasticlogs_q_write_10M",
           "iterations": 1
         },
         {
-          "operation": "relative-kibana-traffic-dashboard_50%",
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
           "iterations": 1
         },
         {
-          "operation": "relative-kibana-content_issues-dashboard_50%",
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
           "iterations": 1
         }
       ]
     },
     {
-      "name": "kibana-test-noindex",
-      "description": "Indexes data and then queries it using Kibana.",
-      "index-settings": {
-        "index.number_of_replicas": 0,
-        "index.number_of_shards":1
-      },
+      "name": "elasticlogs_q-1bn-load-16-clients",
+      "description": "Indexes 1bn documents (10 batches of 100M) into elasticlogs_q-* indices using 16 clients . IDs are autogenerated by Elasticsearch, meaning there are no conflicts.",
       "meta": {
-        "high_level_parameter": "test"
+        "client_count": 16,
+        "benchmark_type": "indexing"
       },
       "schedule": [
         {
-          "operation": "fieldstats_elasticlogs-*_KIBANATEST",
+          "operation": "create_elasticlogs_q_write",
+          "clients": 1,
+          "warmup-iterations": 0,
           "iterations": 1
         },
         {
-          "operation": "relative-kibana-traffic-dashboard_50%",
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
           "iterations": 1
         },
         {
-          "operation": "relative-kibana-content_issues-dashboard_50%",
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
           "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 100000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        }
+      ]
+    },
+    {
+      "name": "elasticlogs_q-500M-load-8-clients",
+      "description": "Indexes 500M documents (10 batches of 50M) into elasticlogs_q-* indices using 8 clients . IDs are autogenerated by Elasticsearch, meaning there are no conflicts.",
+      "meta": {
+        "client_count": 8,
+        "benchmark_type": "indexing"
+      },
+      "schedule": [
+        {
+          "operation": "create_elasticlogs_q_write",
+          "clients": 1,
+          "warmup-iterations": 0,
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 8
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        }
+      ]
+    },
+    {
+      "name": "elasticlogs_q-500M-load-16-clients",
+      "description": "Indexes 500M documents (10 batches of 50M) into elasticlogs_q-* indices using 16 clients . IDs are autogenerated by Elasticsearch, meaning there are no conflicts.",
+      "meta": {
+        "client_count": 16,
+        "benchmark_type": "indexing"
+      },
+      "schedule": [
+        {
+          "operation": "create_elasticlogs_q_write",
+          "clients": 1,
+          "warmup-iterations": 0,
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_q_write",    
+          "iterations": 50000,
+          "clients": 16
+        },
+        {
+          "operation": "rollover_elasticlogs_q_write_10M",
+          "iterations": 1
+        }
+      ]
+    },
+    {
+      "name": "combined-indexing-and-querying",
+      "description": "This challenge simulates a set of Kibana queries against historical data (elasticlogs_g-* indices) as well as against the most recent data currently being indexed. It combined this with rate-limited indexing at varying levels. It assumes one of the challenges creating elasticlogs_q-* indices has been run.",
+      "meta": {
+        "benchmark_type": "indexing/querying"
+      },
+      "schedule": [
+        {
+          "operation": "fieldstats_elasticlogs_q-*_ELASTICLOGS",
+          "iterations": 1
+        },
+        {
+          "parallel": {
+            "warmup-time-period": 0,
+            "time-period": 1800,
+            "tasks": [
+              {
+                "operation": "relative-kibana-content_issues-dashboard_25%",
+                "target-interval": 300,
+                "meta": {
+                  "target_indexing_rate": 0
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_50%",
+                "target-interval": 60,
+                "meta": {
+                  "target_indexing_rate": 0
+                }
+              }
+            ]
+          }
+        },
+        {
+          "operation": "create_elasticlogs_i_write",
+          "clients": 1,
+          "warmup-iterations": 0,
+          "iterations": 1
+        },
+        {
+          "operation": "index-append-1000-elasticlogs_i_write",    
+          "warmup-time-period": 600,
+          "time-period": 600,
+          "target-throughput": 10,
+          "clients": 8
+        },
+        {
+          "parallel": {
+            "warmup-time-period": 0,
+            "time-period": 1800,
+            "tasks": [
+              {
+                "operation": "index-append-1000-elasticlogs_i_write",
+                "target-throughput": 2,
+                "clients": 8,
+                "meta": {
+                  "target_indexing_rate": 2000
+                }
+              },
+              {
+                "operation": "rollover_elasticlogs_i_write_100M",
+                "target-interval": 10
+              },
+              {
+                "operation": "current-kibana-traffic-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 2000
+                }
+              },
+              { 
+                "operation": "current-kibana-content_issues-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 2000
+                }
+              },
+              { 
+                "operation": "current-kibana-traffic-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 2000
+                }
+              },
+              {
+                "operation": "current-kibana-content_issues-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 2000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_25%",
+                "target-interval": 300,
+                "meta": {
+                  "target_indexing_rate": 2000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_50%",
+                "target-interval": 60,
+                "meta": {
+                  "target_indexing_rate": 2000
+                }
+              }
+            ]
+          }
+        },
+        {
+          "parallel": {
+            "warmup-time-period": 0,
+            "time-period": 1800,
+            "tasks": [
+              {
+                "operation": "index-append-1000-elasticlogs_i_write",
+                "target-throughput": 4,
+                "clients": 8,
+                "meta": {
+                  "target_indexing_rate": 4000
+                }
+              },
+              {
+                "operation": "rollover_elasticlogs_i_write_100M",
+                "target-interval": 10
+              },
+              {
+                "operation": "current-kibana-traffic-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 4000
+                }
+              },
+              { 
+                "operation": "current-kibana-content_issues-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 4000
+                }
+              },
+              { 
+                "operation": "current-kibana-traffic-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 4000
+                }
+              },
+              {
+                "operation": "current-kibana-content_issues-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 4000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_25%",
+                "target-interval": 300,
+                "meta": {
+                  "target_indexing_rate": 4000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_50%",
+                "target-interval": 60,
+                "meta": {
+                  "target_indexing_rate": 4000
+                }
+              }
+            ]
+          }
+        },
+        {
+          "parallel": {
+            "warmup-time-period": 0,
+            "time-period": 1800,
+            "tasks": [
+              {
+                "operation": "index-append-1000-elasticlogs_i_write",
+                "target-throughput": 8,
+                "clients": 8,
+                "meta": {
+                  "target_indexing_rate": 8000
+                }
+              },
+              {
+                "operation": "rollover_elasticlogs_i_write_100M",
+                "target-interval": 10
+              },
+              {
+                "operation": "current-kibana-traffic-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 8000
+                }
+              },
+              { 
+                "operation": "current-kibana-content_issues-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 8000
+                }
+              },
+              { 
+                "operation": "current-kibana-traffic-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 8000
+                }
+              },
+              {
+                "operation": "current-kibana-content_issues-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 8000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_25%",
+                "target-interval": 300,
+                "meta": {
+                  "target_indexing_rate": 8000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_50%",
+                "target-interval": 60,
+                "meta": {
+                  "target_indexing_rate": 8000
+                }
+              }
+            ]
+          }
+        },
+        {
+          "parallel": {
+            "warmup-time-period": 0,
+            "time-period": 1800,
+            "tasks": [
+              {
+                "operation": "index-append-1000-elasticlogs_i_write",
+                "target-throughput": 12,
+                "clients": 8,
+                "meta": {
+                  "target_indexing_rate": 12000
+                }
+              },
+              {
+                "operation": "rollover_elasticlogs_i_write_100M",
+                "target-interval": 10
+              },
+              {
+                "operation": "current-kibana-traffic-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 12000
+                }
+              },
+              { 
+                "operation": "current-kibana-content_issues-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 12000
+                }
+              },
+              { 
+                "operation": "current-kibana-traffic-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 12000
+                }
+              },
+              {
+                "operation": "current-kibana-content_issues-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 12000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_25%",
+                "target-interval": 300,
+                "meta": {
+                  "target_indexing_rate": 12000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_50%",
+                "target-interval": 60,
+                "meta": {
+                  "target_indexing_rate": 12000
+                }
+              }
+            ]
+          }
+        },
+        {
+          "parallel": {
+            "warmup-time-period": 0,
+            "time-period": 1800,
+            "tasks": [
+              {
+                "operation": "index-append-1000-elasticlogs_i_write",
+                "target-throughput": 16,
+                "clients": 8,
+                "meta": {
+                  "target_indexing_rate": 16000
+                }
+              },
+              {
+                "operation": "rollover_elasticlogs_i_write_100M",
+                "target-interval": 10
+              },
+              {
+                "operation": "current-kibana-traffic-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 16000
+                }
+              },
+              { 
+                "operation": "current-kibana-content_issues-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 16000
+                }
+              },
+              { 
+                "operation": "current-kibana-traffic-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 16000
+                }
+              },
+              {
+                "operation": "current-kibana-content_issues-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 16000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_25%",
+                "target-interval": 300,
+                "meta": {
+                  "target_indexing_rate": 16000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_50%",
+                "target-interval": 60,
+                "meta": {
+                  "target_indexing_rate": 16000
+                }
+              }
+            ]
+          }
+        },
+        {
+          "parallel": {
+            "warmup-time-period": 0,
+            "time-period": 1800,
+            "tasks": [
+              {
+                "operation": "index-append-1000-elasticlogs_i_write",
+                "target-throughput": 20,
+                "clients": 8,
+                "meta": {
+                  "target_indexing_rate": 20000
+                }
+              },
+              {
+                "operation": "rollover_elasticlogs_i_write_100M",
+                "target-interval": 10
+              },
+              {
+                "operation": "current-kibana-traffic-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 20000
+                }
+              },
+              { 
+                "operation": "current-kibana-content_issues-dashboard_30m",
+                "target-interval": 10,
+                "meta": {
+                  "target_indexing_rate": 20000
+                }
+              },
+              { 
+                "operation": "current-kibana-traffic-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 20000
+                }
+              },
+              {
+                "operation": "current-kibana-content_issues-dashboard_15m",
+                "target-interval": 5,
+                "clients": 2,
+                "meta": {
+                  "target_indexing_rate": 20000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_25%",
+                "target-interval": 300,
+                "meta": {
+                  "target_indexing_rate": 20000
+                }
+              }, 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_50%",
+                "target-interval": 60,
+                "meta": {
+                  "target_indexing_rate": 20000
+                }
+              }
+            ]
+          }
         }
       ]
     }
   ]
 }
-
