@@ -758,15 +758,6 @@
         {
           "operation": "rollover_elasticlogs_q_write_10M",
           "iterations": 1
-        },
-        {
-          "operation": "index-append-1000-elasticlogs_q_write",    
-          "iterations": 100000,
-          "clients": 8
-        },
-        {
-          "operation": "rollover_elasticlogs_q_write_10M",
-          "iterations": 1
         }
       ]
     },
@@ -873,15 +864,6 @@
         {
           "operation": "rollover_elasticlogs_q_write_10M",
           "iterations": 1
-        },
-        {
-          "operation": "index-append-1000-elasticlogs_q_write",    
-          "iterations": 100000,
-          "clients": 16
-        },
-        {
-          "operation": "rollover_elasticlogs_q_write_10M",
-          "iterations": 1
         }
       ]
     },
@@ -897,15 +879,6 @@
           "operation": "create_elasticlogs_q_write",
           "clients": 1,
           "warmup-iterations": 0,
-          "iterations": 1
-        },
-        {
-          "operation": "index-append-1000-elasticlogs_q_write",    
-          "iterations": 50000,
-          "clients": 8
-        },
-        {
-          "operation": "rollover_elasticlogs_q_write_10M",
           "iterations": 1
         },
         {
