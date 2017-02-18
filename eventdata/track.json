@@ -1106,7 +1106,7 @@
             "tasks": [
               {
                 "operation": "relative-kibana-content_issues-dashboard_25%",
-                "target-interval": 300,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": 0
                 }
@@ -1183,7 +1183,7 @@
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_25%",
-                "target-interval": 300,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": 2000
                 }
@@ -1247,7 +1247,7 @@
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_25%",
-                "target-interval": 300,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": 4000
                 }
@@ -1311,7 +1311,7 @@
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_25%",
-                "target-interval": 300,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": 8000
                 }
@@ -1375,7 +1375,7 @@
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_25%",
-                "target-interval": 300,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": 12000
                 }
@@ -1439,7 +1439,7 @@
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_25%",
-                "target-interval": 300,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": 16000
                 }
@@ -1503,7 +1503,7 @@
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_25%",
-                "target-interval": 300,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": 20000
                 }
