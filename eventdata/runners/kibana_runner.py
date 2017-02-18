@@ -68,7 +68,7 @@ def kibana(es, params):
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("[kibana_runner] Received request: {}".format(json.dumps(request)))
 
-    visualisations = len(request) / 2
+    visualisations = int(len(request) / 2)
 
     response = {
         "weight": 1,
@@ -96,7 +96,7 @@ def kibana(es, params):
                     request[i]['index'] = __perform_field_stats_lookup(es, pattern, field, ts_min, ts_max, ts_fmt)
                     cache[key] = request[i]['index']
 
-        field_stat_duration = __get_ms_timestamp() - field_stat_start
+        field_stat_duration = int(__get_ms_timestamp() - field_stat_start)
         response['field_stats_duration_ms'] = field_stat_duration
 
     except elasticsearch.TransportError as e:
@@ -105,7 +105,7 @@ def kibana(es, params):
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("[kibana_runner] Updated request: {}".format(request))
 
-    response = es.msearch(body = request)
+    result = es.msearch(body = request)
 
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("[kibana_runner] response: {}".format(response))

@@ -135,7 +135,7 @@ class ElasticlogsKibanaSource:
     def params(self):
         # Determine window_end boundaries
         if len(self._window_end) == 1:
-            ts_max_ms = self.__window_boundary_to_ms(self._window_end[0])
+            ts_max_ms = int(self.__window_boundary_to_ms(self._window_end[0]))
         else:
             t1 = self.__window_boundary_to_ms(self._window_end[0])
             t2 = self.__window_boundary_to_ms(self._window_end[1])

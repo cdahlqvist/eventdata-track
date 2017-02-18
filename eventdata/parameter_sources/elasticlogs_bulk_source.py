@@ -56,15 +56,15 @@ class ElasticlogsBulkSource:
         self._default_index = False
         if 'index' not in params.keys():
             if len(indices) > 1:
-                logger.info("[bulk] More than one index specified in track configuration. Will use the first one ({})".format(indices[0].name))
+                logger.debug("[bulk] More than one index specified in track configuration. Will use the first one ({})".format(indices[0].name))
             else:
-                logger.info("[bulk] Using index specified in track configuration ({})".format(indices[0].name))
+                logger.debug("[bulk] Using index specified in track configuration ({})".format(indices[0].name))
 
             self._params['index'] = indices[0].name
             self._default_index = True
 
         else:
-            logger.info("[bulk] Index pattern specified in parameters ({}) will be used".format(params['index']))
+            logger.debug("[bulk] Index pattern specified in parameters ({}) will be used".format(params['index']))
 
         if 'type' not in params.keys():
             self._params['type'] = indices[0].types[0].name

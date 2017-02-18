@@ -8,7 +8,7 @@ def deleteindex(es, params):
         "index_pattern"        - Specifies the index pattern to delete. Defaults to 'elasticlogs-*'
     """
     if 'index_pattern' in params:
-        index_pattern = params['index_name']
+        index_pattern = params['index_pattern']
     else:
         index_pattern = "elasticlogs-*"
 

@@ -19,7 +19,8 @@ def indicesstats(es, params):
 
     response = {
         "weight": 1,
-        "unit": "ops"
+        "unit": "ops",
+        "index_pattern": index_pattern
     }
 
     try:
@@ -29,22 +30,22 @@ def indicesstats(es, params):
             a = result['_all']
 
             if a['primaries']['docs']['count']:
-                response['primary_docs'] = a['primaries']['docs']['count']
+                response['primary_doc_count'] = a['primaries']['docs']['count']
 
             if a['total']['docs']['count']:
-                response['total_docs'] = a['total']['docs']['count']
+                response['total_doc_count'] = a['total']['docs']['count']
 
             if a['primaries']['store']['size_in_bytes']:
-                response['primary_size'] = a['primaries']['store']['size_in_bytes']
+                response['primary_size_bytes'] = a['primaries']['store']['size_in_bytes']
 
             if a['total']['store']['size_in_bytes']:
-                response['total_size'] = a['total']['store']['size_in_bytes']
+                response['total_size_bytes'] = a['total']['store']['size_in_bytes']
 
             if a['primaries']['segments']['count']:
-                response['primary_segments'] = a['primaries']['segments']['count']
+                response['primary_segment_count'] = a['primaries']['segments']['count']
 
             if a['total']['segments']['count']:
-                response['total_segments'] = a['total']['segments']['count']
+                response['total_segment_count'] = a['total']['segments']['count']
 
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("Indices stats for {} => {}".format(index_pattern, json.dumps(result)))

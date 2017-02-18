@@ -4,7 +4,7 @@
 {% set clients = 16 %}
 
 {# Rate limit steps (ops) for combined indexing and querying #}
-{% set rate_limit_ops = [1,2,4,6,8,10,12,14,16,18,20] %}
+{% set rate_limit_ops = [2,4,6,8,10,12,14,16,18,20] %}
 
 {# Duration of each rate limited indexing and querying benchmark in seconds #}
 {% set rate_limit_duration_secs = 1800 %}
@@ -71,13 +71,6 @@
       "operation-type": "index",
       "param-source": "elasticlogs_bulk",
       "bulk-size": 125
-    },
-    {
-      "name": "index-append-1000-elasticlogs_write",
-      "operation-type": "index",
-      "param-source": "elasticlogs_bulk",
-      "index": "elasticlogs_write",
-      "bulk-size": 1000
     },
     {
       "name": "index-append-1000-elasticlogs_q_write",
@@ -336,6 +329,11 @@
       "name": "indicesstats_elasticlogs_i_write",
       "operation-type": "indicesstats",
       "index_pattern": "elasticlogs_i_write"
+    },
+    {
+      "name": "deleteindex_elasticlogs_i-*",
+      "operation-type": "deleteindex",
+      "index_pattern": "elasticlogs_i-*"
     },
     {
       "name": "current-kibana-traffic-dashboard_1h",
@@ -651,11 +649,15 @@
     },
     {
       "name": "combined-indexing-and-querying",
-      "description": "This challenge simulates a set of Kibana queries against historical data (elasticlogs_g-* indices) as well as against the most recent data currently being indexed. It combined this with rate-limited indexing at varying levels. It assumes one of the challenges creating elasticlogs_q-* indices has been run.",
+      "description": "This challenge simulates a set of Kibana queries against historical data (elasticlogs_q-* indices) as well as against the most recent data currently being indexed. It combined this with rate-limited indexing at varying levels. It assumes one of the challenges creating elasticlogs_q-* indices has been run.",
       "meta": {
         "benchmark_type": "indexing/querying"
       },
       "schedule": [
+        {
+          "operation": "deleteindex_elasticlogs_i-*",
+          "iterations": 1
+        },
         {
           "operation": "fieldstats_elasticlogs_q-*_ELASTICLOGS",
           "iterations": 1
@@ -691,8 +693,8 @@
         {# Add some data to index so it does not start empty #}
         {
           "operation": "index-append-1000-elasticlogs_i_write",    
-          "warmup-time-period": 600,
-          "time-period": 600,
+          "warmup-time-period": {{ rate_limit_duration_secs }},
+          "time-period": {{ rate_limit_duration_secs }},
           "target-throughput": 10,
           "clients": {{ clients }}
         },
@@ -720,7 +722,10 @@
                 "target-interval": 10,
                 "clients": 2,
                 "meta": {
-                  "target_indexing_rate": {{ rate }}
+                  "target_indexing_rate": {{ rate }},
+                  "dashboard": "traffic",
+                  "interval": "30m",
+                  "query_type": "current"
                 }
               },
               { 
@@ -728,7 +733,10 @@
                 "target-interval": 10,
                 "clients": 2,
                 "meta": {
-                  "target_indexing_rate": {{ rate }}
+                  "target_indexing_rate": {{ rate }},
+                  "dashboard": "content_issues",
+                  "interval": "30m",
+                  "query_type": "current"
                 }
               },
               { 
@@ -736,7 +744,10 @@
                 "target-interval": 5,
                 "clients": 4,
                 "meta": {
-                  "target_indexing_rate": {{ rate }}
+                  "target_indexing_rate": {{ rate }},
+                  "dashboard": "traffic",
+                  "interval": "15m",
+                  "query_type": "current"
                 }
               },
               {
@@ -744,21 +755,40 @@
                 "target-interval": 5,
                 "clients": 4,
                 "meta": {
-                  "target_indexing_rate": {{ rate }}
+                  "target_indexing_rate": {{ rate }},
+                  "dashboard": "content_issues",
+                  "interval": "15m",
+                  "query_type": "current"
                 }
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_25%",
                 "target-interval": 30,
                 "meta": {
-                  "target_indexing_rate": {{ rate }}
+                  "target_indexing_rate": {{ rate }},
+                  "dashboard": "content_issues",
+                  "interval": "25%",
+                  "query_type": "historic"
                 }
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_50%",
                 "target-interval": 60,
                 "meta": {
-                  "target_indexing_rate": {{ rate }}
+                  "target_indexing_rate": {{ rate }},
+                  "dashboard": "content_issues",
+                  "interval": "50%",
+                  "query_type": "historic"
+                }
+              },
+              {
+                "operation": "relative-kibana-content_issues-dashboard_75%",
+                "target-interval": 200,
+                "meta": {
+                  "target_indexing_rate": {{ rate }},
+                  "dashboard": "content_issues",
+                  "interval": "75%",
+                  "query_type": "historic"
                 }
               }
             ]
