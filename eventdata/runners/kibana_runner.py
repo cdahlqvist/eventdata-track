@@ -68,13 +68,19 @@ def kibana(es, params):
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("[kibana_runner] Received request: {}".format(json.dumps(request)))
 
+    visualisations = len(request) / 2
+
+    response = {
+        "weight": 1,
+        "unit": "ops",
+        "visualisation_count": visualisations
+    }
+
     try:
         field_stat_start = __get_ms_timestamp()
 
         # Loops through visualisations and calls field stats API for each one without caching, which is what 
         # Kibana currently does
-        visualisations = len(request) / 2
-    
         cache = {}
 
         for i in range(0,len(request),2):
@@ -91,6 +97,7 @@ def kibana(es, params):
                     cache[key] = request[i]['index']
 
         field_stat_duration = __get_ms_timestamp() - field_stat_start
+        response['field_stats_duration_ms'] = field_stat_duration
 
     except elasticsearch.TransportError as e:
         logger.info("[kibana_runner] Error looking up field stats: {}".format(e))
@@ -103,10 +110,4 @@ def kibana(es, params):
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("[kibana_runner] response: {}".format(response))
 
-    return {
-        "weight": 1,
-        "unit": "ops",
-        "timeout_ms": tout,
-        "field_stats_duration_ms": field_stat_duration,
-        "visualisation_count": visualisations
-    }
+    return response
