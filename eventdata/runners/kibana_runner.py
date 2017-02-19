@@ -60,7 +60,8 @@ def kibana(es, params):
     Simulates Kibana msearch dashboard queries.
 
     It expects the parameter hash to contain the following keys:
-        "body"    - msearch request body representing the Kibana dashboard in the  form of an array of dicts.
+        "body"      - msearch request body representing the Kibana dashboard in the  form of an array of dicts.
+        "meta_data" - Dictionary containing meta data information to be carried through into metrics.
     """
     request = params['body']
     tout = 0
@@ -70,12 +71,17 @@ def kibana(es, params):
 
     visualisations = int(len(request) / 2)
 
-    response = {
-        "weight": 1,
-        "unit": "ops",
-        "visualisation_count": visualisations
-    }
+    response = {}
 
+    if 'meta_data' in params:
+        meta_data = params['meta_data']
+        for key in meta_data.keys():
+            response[key] = meta_data[key]
+
+    response['weight'] = 1
+    response['unit'] = "ops"
+    response['visualisation_count'] = visualisations
+    
     try:
         field_stat_start = __get_ms_timestamp()
 

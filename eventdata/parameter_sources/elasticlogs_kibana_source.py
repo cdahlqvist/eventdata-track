@@ -34,8 +34,10 @@ class ElasticlogsKibanaSource:
 
     It expects the parameter hash to contain the following keys:
         "dashboard"            -   String indicating which dashboard to simulate. Defaults to 'traffic'.
-        "query_string"         -   String or list of strings indicating query parameters to randomize during benchmarking. (optional) Defaults to "*"
-        "index_pattern"        -   String representing the index pattern to query. Defaults to 'elasticlogs-*'.     
+        "query_string"         -   String or list of strings indicating query parameters to randomize during benchmarking. Defaults to "*", If a 
+                                   list has been specified, a random value will be selected.
+        "index_pattern"        -   String opr list of strings representing the index pattern to query. Defaults to 'elasticlogs-*'. If a list has 
+                                   been specified, a random value will be selected.    
         "fieldstats_id".       -   fieldstats_id to base relative window definitions on. (not mandatory)
         "window_end"           -   Specification of aggregation window end or period within which it should end. If one single value is specified, 
                                    that will be used to anchor the window. If two values are given in a comma separated list, the end of the window
@@ -66,10 +68,7 @@ class ElasticlogsKibanaSource:
             self._index_pattern = params['index_pattern']
         
         if 'query_string' in params.keys():
-            if isinstance(params['query_string'], str):
-                self._query_string_list = [params['query_string']]
-            elif isinstance(params['query_string'], list):
-                self._query_string_list = params['query_string']
+            self._query_string_list = params['query_string']
 
         if 'dashboard' in params.keys():
             if params['dashboard'] in available_dashboards:
@@ -147,20 +146,37 @@ class ElasticlogsKibanaSource:
 
         window_size_seconds = int(self._window_duration_ms / 1000)
 
-        # Determibne histogram interval
+        meta_data = {}
+
+        # Determine histogram interval
         interval = self.__determine_interval(window_size_seconds, 50, 100)
+        meta_data['interval'] = interval
 
-        index_pattern = self._index_pattern
+        index_pattern = self.__select_random_item(self._index_pattern)
+        meta_data['index_pattern'] = index_pattern
 
-        idx = random.randint(0, len(self._query_string_list)-1)
-        query_string = self._query_string_list[idx]
+        query_string = self.__select_random_item(self._query_string_list)
+        meta_data['query_string'] = query_string
+
+        meta_data['dashboard'] = self._dashboard
+
+        meta_data['window_length'] = self._window_length
 
         if self._dashboard == 'traffic':
             response = {"body": self.__traffic_dashboard(index_pattern, query_string, interval, ts_min_ms, ts_max_ms)}
         elif self._dashboard == 'content_issues':
             response = {"body": self.__content_issues_dashboard(index_pattern, query_string, interval, ts_min_ms, ts_max_ms)}
         
+        response['meta_data'] = meta_data
+
         return response
+
+    def __select_random_item(self, values):
+        if isinstance(values, list):
+            idx = random.randint(0, len(values)-1)
+            return values[idx] 
+        else:
+            return values
 
     def __window_boundary_to_ms(self, wb):
         if wb['type'] == 'relative':
