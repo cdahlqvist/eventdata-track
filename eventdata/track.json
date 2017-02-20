@@ -402,7 +402,7 @@
       "param-source": "elasticlogs_kibana",
       "dashboard": "traffic",
       "index_pattern": "elasticlogs_q-*",
-      "query_string": ["*"],
+      "query_string": {% include "query_strings.json" %},
       "fieldstats_id": "ELASTICLOGS",
       "window_end": "START+25%,END",
       "window_length": "25%"
@@ -413,7 +413,7 @@
       "param-source": "elasticlogs_kibana",
       "dashboard": "content_issues",
       "index_pattern": "elasticlogs_q-*",
-      "query_string": ["*"],
+      "query_string": {% include "query_strings.json" %},
       "fieldstats_id": "ELASTICLOGS",
       "window_end": "START+25%,END",
       "window_length": "25%"
@@ -424,7 +424,7 @@
       "param-source": "elasticlogs_kibana",
       "dashboard": "traffic",
       "index_pattern": "elasticlogs_q-*",
-      "query_string": ["*"],
+      "query_string": {% include "query_strings.json" %},
       "fieldstats_id": "ELASTICLOGS",
       "window_end": "START+50%,END",
       "window_length": "50%"
@@ -435,7 +435,7 @@
       "param-source": "elasticlogs_kibana",
       "dashboard": "content_issues",
       "index_pattern": "elasticlogs_q-*",
-      "query_string": ["*"],
+      "query_string": {% include "query_strings.json" %},
       "fieldstats_id": "ELASTICLOGS",
       "window_end": "START+50%,END",
       "window_length": "50%"
@@ -446,7 +446,7 @@
       "param-source": "elasticlogs_kibana",
       "dashboard": "traffic",
       "index_pattern": "elasticlogs_q-*",
-      "query_string": ["*"],
+      "query_string": {% include "query_strings.json" %},
       "fieldstats_id": "ELASTICLOGS",
       "window_end": "START+75%,END",
       "window_length": "75%"
@@ -457,7 +457,7 @@
       "param-source": "elasticlogs_kibana",
       "dashboard": "content_issues",
       "index_pattern": "elasticlogs_q-*",
-      "query_string": ["*"],
+      "query_string": {% include "query_strings.json" %},
       "fieldstats_id": "ELASTICLOGS",
       "window_end": "START+75%,END",
       "window_length": "75%"
