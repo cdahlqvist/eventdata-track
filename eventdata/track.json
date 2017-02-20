@@ -564,6 +564,20 @@
         },
         {
           "parallel": {
+            "warmup-iterations": 200,
+            "iterations": 200,
+            "tasks": [ 
+              {
+                "operation": "relative-kibana-content_issues-dashboard_75%",
+                "meta": {
+                  "query_type": "warmup"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "parallel": {
             "warmup-time-period": 0,
             "time-period": {{ rate_limit_duration_secs }},
             "tasks": [
