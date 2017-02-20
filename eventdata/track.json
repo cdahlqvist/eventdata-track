@@ -100,48 +100,9 @@
           "index.number_of_replicas": {{ replica_count }},
           "index.number_of_shards": {{ shard_count }}
         },
-        "mappings": {
-          "logs": {
-            "properties": {
-              "@timestamp": { "type": "date" },
-              "@message": { "type": "text", "index": false },
-              "agent": { "type": "keyword", "ignore_above": 256 },
-              "bytes": { "type": "integer" },
-              "clientip": { "type": "ip" },
-              "httpversion": { "type": "keyword", "ignore_above": 256 },
-              "response": { "type": "short" },
-              "verb": { "type": "keyword", "ignore_above": 256 },
-              "geoip" : {
-                "properties" : {
-                  "country_name" : { "type": "keyword" },
-                  "location" : { "type": "geo_point" }
-                }
-              },
-              "useragent": {
-                "properties": {
-                  "name": { "type": "keyword", "ignore_above": 256 },
-                  "os": { "type": "keyword", "ignore_above": 256 },
-                  "os_name": { "type": "keyword", "ignore_above": 256 }
-                }
-              },
-              "request": {
-                "norms": false,
-                "type": "text",
-                "fields": {
-                  "keyword": { "ignore_above": 256, "type": "keyword" }
-                }
-              },
-              "referrer": {
-                "norms": false,
-                "type": "text",
-                "fields": {
-                  "keyword": { "ignore_above": 256, "type": "keyword" }
-                }
-              }
-            },
-            "_all": { "enabled": false }
-          }
-        },
+        "mappings": 
+          {% include "mappings.json" %}
+        ,
         "aliases": {}
       },
       "index_template_name": "elasticlogs_q_write"
@@ -159,48 +120,9 @@
           "index.number_of_replicas": {{ replica_count }},
           "index.number_of_shards": {{ shard_count }}
         },
-        "mappings": {
-          "logs": {
-            "properties": {
-              "@timestamp": { "type": "date" },
-              "@message": { "type": "text", "index": false },
-              "agent": { "type": "keyword", "ignore_above": 256 },
-              "bytes": { "type": "integer" },
-              "clientip": { "type": "ip" },
-              "httpversion": { "type": "keyword", "ignore_above": 256 },
-              "response": { "type": "short" },
-              "verb": { "type": "keyword", "ignore_above": 256 },
-              "geoip" : {
-                "properties" : {
-                  "country_name" : { "type": "keyword" },
-                  "location" : { "type": "geo_point" }
-                }
-              },
-              "useragent": {
-                "properties": {
-                  "name": { "type": "keyword", "ignore_above": 256 },
-                  "os": { "type": "keyword", "ignore_above": 256 },
-                  "os_name": { "type": "keyword", "ignore_above": 256 }
-                }
-              },
-              "request": {
-                "norms": false,
-                "type": "text",
-                "fields": {
-                  "keyword": { "ignore_above": 256, "type": "keyword" }
-                }
-              },
-              "referrer": {
-                "norms": false,
-                "type": "text",
-                "fields": {
-                  "keyword": { "ignore_above": 256, "type": "keyword" }
-                }
-              }
-            },
-            "_all": { "enabled": false }
-          }
-        },
+        "mappings": 
+            {% include "mappings.json" %}
+        ,
         "aliases": {}
       },
       "index_template_name": "elasticlogs_i_write"
@@ -250,28 +172,6 @@
       }
     },
     {
-      "name": "rollover_elasticlogs_q_write_1M",
-      "operation-type": "rollover",
-      "alias": "elasticlogs_q_write",
-      "body": {
-        "conditions": {
-          "max_age":   "1d",
-          "max_docs":  1000000
-        }
-      }
-    },
-    {
-      "name": "rollover_elasticlogs_i_write_1M",
-      "operation-type": "rollover",
-      "alias": "elasticlogs_i_write",
-      "body": {
-        "conditions": {
-          "max_age":   "1d",
-          "max_docs":  1000000
-        }
-      }
-    },
-    {
       "name": "scanquery_elasticlogs_i_1m",
       "operation-type": "search",
       "index": "elasticlogs_i-*",
@@ -282,23 +182,6 @@
           "range" : {
             "@timestamp" : {
               "gte" : "now-1m",
-              "lt" :  "now"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "scanquery_elasticlogs_i_5m",
-      "operation-type": "search",
-      "index": "elasticlogs_i-*",
-      "pages": 10000,
-      "results-per-page": 10000,
-      "body": {
-        "query": {
-          "range" : {
-            "@timestamp" : {
-              "gte" : "now-5m",
               "lt" :  "now"
             }
           }
@@ -335,26 +218,6 @@
       "name": "deleteindex_elasticlogs_i-*",
       "operation-type": "deleteindex",
       "index_pattern": "elasticlogs_i-*"
-    },
-    {
-      "name": "current-kibana-traffic-dashboard_1h",
-      "operation-type": "kibana",
-      "param-source": "elasticlogs_kibana",
-      "dashboard":"traffic",
-      "index_pattern": "elasticlogs_i-*",
-      "query_string": ["*"],
-      "window_end": "now",
-      "window_length": "1h"
-    },
-    {
-      "name": "current-kibana-content_issues-dashboard_1h",
-      "operation-type": "kibana",
-      "param-source": "elasticlogs_kibana",
-      "dashboard":"content_issues",
-      "index_pattern": "elasticlogs_i-*",
-      "query_string": ["*"],
-      "window_end": "now",
-      "window_length": "1h"
     },
     {
       "name": "current-kibana-traffic-dashboard_30m",
