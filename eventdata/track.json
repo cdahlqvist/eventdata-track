@@ -629,7 +629,7 @@
               },
               {
                 "operation": "current-kibana-traffic-dashboard_30m",
-                "target-interval": 20,
+                "target-interval": 30,
                 "clients": 2,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
@@ -638,7 +638,7 @@
               },
               { 
                 "operation": "current-kibana-content_issues-dashboard_30m",
-                "target-interval": 20,
+                "target-interval": 30,
                 "clients": 2,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
