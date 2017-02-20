@@ -569,7 +569,7 @@
             "tasks": [
               {
                 "operation": "relative-kibana-content_issues-dashboard_25%",
-                "target-interval": 30,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": 0,
                   "query_type": "historic"
@@ -577,7 +577,7 @@
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_50%",
-                "target-interval": 60,
+                "target-interval": 90,
                 "meta": {
                   "target_indexing_rate": 0,
                   "query_type": "historic"
@@ -629,7 +629,7 @@
               },
               {
                 "operation": "current-kibana-traffic-dashboard_30m",
-                "target-interval": 10,
+                "target-interval": 20,
                 "clients": 2,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
@@ -638,7 +638,7 @@
               },
               { 
                 "operation": "current-kibana-content_issues-dashboard_30m",
-                "target-interval": 10,
+                "target-interval": 20,
                 "clients": 2,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
@@ -647,7 +647,7 @@
               },
               { 
                 "operation": "current-kibana-traffic-dashboard_15m",
-                "target-interval": 5,
+                "target-interval": 10,
                 "clients": 4,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
@@ -656,7 +656,7 @@
               },
               {
                 "operation": "current-kibana-content_issues-dashboard_15m",
-                "target-interval": 5,
+                "target-interval": 10,
                 "clients": 4,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
@@ -665,7 +665,7 @@
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_25%",
-                "target-interval": 30,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
                   "query_type": "historic"
@@ -673,7 +673,7 @@
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_50%",
-                "target-interval": 60,
+                "target-interval": 90,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
                   "query_type": "historic"
