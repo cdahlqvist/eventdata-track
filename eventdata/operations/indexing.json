@@ -126,6 +126,28 @@
   }
 },
 {
+  "name": "rollover_elasticlogs_q_write_50M",
+  "operation-type": "rollover",
+  "alias": "elasticlogs_q_write",
+  "body": {
+    "conditions": {
+      "max_age":   "1d",
+      "max_docs":  50000000
+    }
+  }
+},
+{
+  "name": "rollover_elasticlogs_i_write_50M",
+  "operation-type": "rollover",
+  "alias": "elasticlogs_i_write",
+  "body": {
+    "conditions": {
+      "max_age":   "1d",
+      "max_docs":  50000000
+    }
+  }
+},
+{
   "name": "rollover_elasticlogs_q_write_10M",
   "operation-type": "rollover",
   "alias": "elasticlogs_q_write",

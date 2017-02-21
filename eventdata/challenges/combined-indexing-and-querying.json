@@ -89,8 +89,8 @@
             }
           },
           {
-            "operation": "rollover_elasticlogs_i_write_10M",
-            "target-interval": 10
+            "operation": "rollover_elasticlogs_i_write_50M",
+            "target-interval": 20
           },
           {
             "operation": "current-kibana-traffic-dashboard_30m",
