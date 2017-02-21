@@ -4,7 +4,7 @@
 {% set clients = 16 %}
 
 {# Rate limit steps (ops) for combined indexing and querying #}
-{% set rate_limit_ops = [2,4,6,8,10,12,14,16,18,20,22,24] %}
+{% set rate_limit_ops = [2,4,6,8,10,12,14,16,18,20,22,24,26,28,30] %}
 
 {# Duration of each rate limited indexing and querying benchmark in seconds #}
 {% set rate_limit_duration_secs = 1800 %}
@@ -15,8 +15,6 @@
 
 {% set shard_sizing_iterations = 25 %}
 {% set shard_sizing_queries = 20 %}
-
-{% set shard_sizing_iterations = 2 %}
 
 {
   "meta": {
@@ -751,7 +749,7 @@
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_50%",
-                "target-interval": 90,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": 0,
                   "query_type": "historic"
@@ -759,7 +757,7 @@
               },
               {
                 "operation": "relative-kibana-content_issues-dashboard_75%",
-                "target-interval": 120,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": 0,
                   "query_type": "historic"
@@ -803,8 +801,7 @@
               },
               {
                 "operation": "current-kibana-traffic-dashboard_30m",
-                "target-interval": 30,
-                "clients": 2,
+                "target-interval": 20,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
                   "query_type": "current"
@@ -812,8 +809,7 @@
               },
               { 
                 "operation": "current-kibana-content_issues-dashboard_30m",
-                "target-interval": 30,
-                "clients": 2,
+                "target-interval": 20,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
                   "query_type": "current"
@@ -822,7 +818,7 @@
               { 
                 "operation": "current-kibana-traffic-dashboard_15m",
                 "target-interval": 10,
-                "clients": 4,
+                "clients": 2,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
                   "query_type": "current"
@@ -831,7 +827,7 @@
               {
                 "operation": "current-kibana-content_issues-dashboard_15m",
                 "target-interval": 10,
-                "clients": 4,
+                "clients": 2,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
                   "query_type": "current"
@@ -847,7 +843,7 @@
               }, 
               {
                 "operation": "relative-kibana-content_issues-dashboard_50%",
-                "target-interval": 90,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
                   "query_type": "historic"
@@ -855,7 +851,7 @@
               },
               {
                 "operation": "relative-kibana-content_issues-dashboard_75%",
-                "target-interval": 120,
+                "target-interval": 60,
                 "meta": {
                   "target_indexing_rate": {{ rate }},
                   "query_type": "historic"
