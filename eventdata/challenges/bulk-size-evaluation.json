@@ -51,6 +51,18 @@
       "warmup-time-period": 0,
       "time-period": 600,
       "clients": {{ clients }}
+    },
+    {
+      "operation": "index-append-20000",
+      "warmup-time-period": 0,
+      "time-period": 600,
+      "clients": {{ clients }}
+    },
+    {
+      "operation": "index-append-50000",
+      "warmup-time-period": 0,
+      "time-period": 600,
+      "clients": {{ clients }}
     }
   ]
 }

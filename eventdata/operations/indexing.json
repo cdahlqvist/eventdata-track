@@ -1,4 +1,16 @@
 {
+  "name": "index-append-50000",
+  "operation-type": "index",
+  "param-source": "elasticlogs_bulk",
+  "bulk-size": 50000
+},
+{
+  "name": "index-append-20000",
+  "operation-type": "index",
+  "param-source": "elasticlogs_bulk",
+  "bulk-size": 20000
+},
+{
   "name": "index-append-10000",
   "operation-type": "index",
   "param-source": "elasticlogs_bulk",
