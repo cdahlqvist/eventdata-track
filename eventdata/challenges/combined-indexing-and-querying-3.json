@@ -3,7 +3,7 @@
   "description": "This challenge simulates a set of Kibana queries against historical data (elasticlogs_q-* indices) as well as against the most recent data currently being indexed. It combined this with rate-limited indexing at varying levels. It assumes one of the challenges creating elasticlogs_q-* indices has been run.",
   "meta": {
     "benchmark_type": "indexing/querying",
-    "target_kibana_queries_per_minute": 11
+    "target_kibana_queries_per_minute": 7
   },
   "schedule": [
     {
@@ -79,7 +79,7 @@
           },
           {
             "operation": "current-kibana-traffic-dashboard_30m",
-            "target-interval": 30,
+            "target-interval": 60,
             "meta": {
               "target_indexing_rate": {{ rate }},
               "query_type": "current"
@@ -87,7 +87,7 @@
           },
           { 
             "operation": "current-kibana-content_issues-dashboard_30m",
-            "target-interval": 30,
+            "target-interval": 60,
             "meta": {
               "target_indexing_rate": {{ rate }},
               "query_type": "current"
@@ -95,7 +95,7 @@
           },
           { 
             "operation": "current-kibana-traffic-dashboard_15m",
-            "target-interval": 20,
+            "target-interval": 30,
             "clients": 2,
             "meta": {
               "target_indexing_rate": {{ rate }},
@@ -104,7 +104,7 @@
           },
           {
             "operation": "current-kibana-content_issues-dashboard_15m",
-            "target-interval": 20,
+            "target-interval": 30,
             "clients": 2,
             "meta": {
               "target_indexing_rate": {{ rate }},
